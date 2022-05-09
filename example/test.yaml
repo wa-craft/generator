@@ -1,0 +1,5295 @@
+openapi: "3.0.3"
+info:
+  version: 1.0.0.091601
+  title: RVM Platform
+  description: |
+    文档包括了 ：116个接口，24个数据对象，涉及数据库表32个
+  license:
+    name: Private License
+    url: rvm.ecovend.uk
+servers:
+  - url: https://www.ecovendrvm.com/api
+    description: 官方地址
+  - url: https://pt.ecovendrvm.com/api
+    description: 葡萄牙后台地址
+  - url: https://uk.ecovendrvm.com/api
+    description: 英国后台地址
+  - url: https://tr.ecovendrvm.com/api
+    description: 土耳其后台地址
+  - url: https://cn.ecovendrvm.com/api
+    description: 用于测试的“中国”后台地址
+  - url: http://rvm.enet51.com/api
+    description: 国内测试地址
+  - url: https://rvm.vm/api
+    description: 内网测试地址
+tags:
+- name: "ipc"
+  description:  |
+    工控机相关接口。
+    所有工控机访问接口的时候，都需要在 header 中带上两个参数：app-id  和 app-key。
+    在测试阶段，app-id 设置为 '4bed7a9e25ac0534'，
+    app-key 设置为 'MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA=='。
+    app-key 的算法是 base64(sha256(md5({$app-id})+ "rvm2021"))
+- name: "auth"
+  description: "认证相关接口"
+- name: "device"
+  description: "设备相关接口"
+- name: "content"
+  description: "内容素材相关接口"
+- name: "publish"
+  description: "内容发布相关接口"
+- name: "barcode"
+  description: "条形码相关接口"
+- name: "recycle"
+  description: "回收统计相关接口"
+- name: "system"
+  description: "系统相关接口"
+- name: "customer"
+  description: "客户管理相关接口"
+- name: "account"
+  description: "账户管理相关接口"
+- name: "user"
+  description: "用户相关接口"
+paths:
+  /ipc/upload:
+    post:
+      summary: 通过后台上传文件，并获得上传后的地址
+      operationId: ipcUpload
+      tags:
+        - ipc
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 上传的文件
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 上传文件成功
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int(4)
+                    default: 1
+                    example: 1
+                  message:
+                    type: string
+                    format: varchar(50)
+                    default: Succeed
+                    example: Succeed
+                  data:
+                    type: string
+                    format: varchar(250)
+                    default: ''
+                    example: http://rvm.enet51.com/upload/api/xxx.jpg
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pushMachineMaintainInfo:
+    post:
+      summary: |
+        维护模式按钮，当机器出现故障，现场工程师完成维护后，点击按钮，上报维护完成。
+        api接收到上报信息后，根据上报的机器型号，重置该机器的所有对应的故障信息，并记录上报的时间。
+      operationId: ipcPushMaintainStatus
+      tags:
+        - ipc
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+        - name: machine_type
+          in: 'query'
+          description: 机器型号字符串
+          required: true
+          schema:
+            type: string
+            format: varchar(100)
+            enum:
+              - NONE
+              - RVM100
+              - RVM200
+              - RVM400_ORIG
+              - RVM400
+              - RVM1000
+              - RVM2000
+      responses:
+        '200':
+          description: 维护完成信息上报成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pushMachineHeartBeat:
+    post:
+      summary: 更新设备心跳信息，更新周期为15分钟一次，心跳信息中包含传感器状态监测
+      operationId: ipcPushDeviceHeartBeat
+      tags:
+        - ipc
+      parameters:
+        - name: app_version
+          in: 'query'
+          description: app当前版本，需要根据发布计划保持一致，命名方式：a.b.c.d：a是大版本号，当前为1；b是小版本号，当前为0；c是修正版本号，当前为0；d是六位发布流水号，两位月两位日两位当日流水号
+          required: true
+          schema:
+            type: string
+            format: varchar(50)
+            default: 1.0.0
+            example: 1.0.0.080101
+        - name: barcode_version
+          in: 'query'
+          description: 条码库当前版本编号，取最大的条码id为版本编号（即 count(*) from barcodes），因此条码库id必须保持连续。当发现机器版本号与服务器当前不一致，则自动创建条码下发任务，app通过 pullJobs 进行任务获取来更新条码。
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+            default: 1
+            example: 1920
+        - name: machine_type
+          in: 'query'
+          description: 机器型号字符串
+          required: true
+          schema:
+            type: string
+            format: varchar(100)
+            enum:
+              - NONE
+              - RVM100
+              - RVM200
+              - RVM400_ORIG
+              - RVM400
+              - RVM1000
+              - RVM2000
+        - name: camera_status
+          in: 'query'
+          description: 摄像头状态
+          required: true
+          schema:
+            type: integer
+            format: tinyint(1)
+            default: 1
+            enum:
+              - 0 #故障
+              - 1 #正常
+            example: 1
+        - name: printer_status
+          in: 'query'
+          description: 打印机状态
+          required: true
+          schema:
+            type: integer
+            format: tinyint(1)
+            default: 1
+            enum:
+              - 0 #故障
+              - 1 #正常
+              - 2 #缺纸
+        - name: plc_status
+          in: 'query'
+          description: PLC状态
+          required: true
+          schema:
+            type: integer
+            format: tinyint(1)
+            default: 1
+            enum:
+              - 0 #故障
+              - 1 #正常
+        - name: plc_errors
+          in: 'query'
+          description: PLC错误信息数组
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/PlcError"
+        - name: scanner1_status
+          in: 'query'
+          description: 高位条码扫描枪状态
+          required: true
+          schema:
+            type: integer
+            format: tinyint(1)
+            default: 1
+            enum:
+              - 0 #故障
+              - 1 #正常
+        - name: scanner2_status
+          in: 'query'
+          description: 低位条码扫描枪状态
+          required: true
+          schema:
+            type: integer
+            format: tinyint(1)
+            default: 1
+            enum:
+              - 0 #故障
+              - 1 #正常
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 心跳发布结果
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pushRecycleRecords:
+    post:
+      summary: |
+        发布Recycle Record，回收后就上报一组数据，即根据回收的条码进行上报，例如一次回收有三种瓶子，则需要上报三条数据。
+        上报之前需要生成 tx 交易id，算法是 md5(uuid+timestamp) + random(1000-9999)。
+        例如 uuid 是 4bed7a9e25ac0534，当前时间是 1618564002，
+        则 tx 是：md5(6afa0773f2b04ac2949b5c1b1cd80b8e1618564002)+rand(1000,9999) = 	c35bf9b77de89fd84932，其中4932是随机数
+        一个用户连续回收多条记录使用相同的tx交易id进行上报
+      operationId: ipcPushRecyclRecords
+      tags:
+        - ipc
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+        - name: records
+          in: 'query'
+          description: 一次回收的多条记录
+          required: true
+          content:
+            multipart/form-data:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecycleRecord"
+      responses:
+        '200':
+          description: 记录发布成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pushMachineAlert:
+    post:
+      summary: 发布设备报警信息
+      operationId: ipcPushDeviceStatus
+      tags:
+        - ipc
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+        - name: type
+          in: 'query'
+          description: 报警类型
+          required: true
+          schema:
+            type: integer
+            format: int4
+        - name: content
+          in: 'query'
+          description: 报警内容
+          required: true
+          schema:
+            type: string
+            format: varchar(255)
+      responses:
+        '200':
+          description: 报警信息发布成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pullJobs:
+    get:
+      summary: |
+        查询拉取服务器待处理任务信息，根据拉取任务的类型来决定下一步触发的任务内容，如：获取新的广告、新的条码、新的机器设置、新的命令等,
+        每隔6秒钟执行一次
+      operationId: ipcPullJobs
+      tags:
+        - ipc
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 获取任务成功
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int(4)
+                    default: 1
+                    example: 1
+                  message:
+                    type: string
+                    format: varchar(50)
+                    default: Succeed
+                    example: Succeed
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RemoteJobsResult"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pushJobStatus:
+    post:
+      summary: 在工控机上完成下载的任务之后，返回一个状态确认信息给服务端
+      operationId: ipcPushJobStatus
+      tags:
+        - ipc
+      parameters:
+        - name: job_id
+          in: 'query'
+          description: 任务编号
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+            default: 0
+            example: 122
+        - name: is_succeed
+          in: 'query'
+          description: 任务执行是否成功
+          required: true
+          schema:
+            type: integer
+            format: boolean
+            default: 1
+            example: 1 #0-执行失败；1-执行成功
+        - name: comment
+          in: 'query'
+          description: 执行备注信息
+          required: true
+          schema:
+            type: string
+            format: varchar(255)
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 修改任务状态成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteJobs'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pullPublishJobs:
+    get:
+      summary: 更新设备广告发布信息，依赖于 /ipc/pullJobs
+      operationId: ipcPullPublismentJobs
+      tags:
+        - ipc
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int(4)
+                    default: 1
+                    example: 1
+                  message:
+                    type: string
+                    format: varchar(50)
+                    default: Succeed
+                    example: Succeed
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublishJobResult'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pullBarcodes:
+    get:
+      summary: 获取新条码信息，依赖于 /ipc/pullJobs
+      operationId: ipcPullBarcodes
+      tags:
+        - ipc
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+        - name: version
+          in: 'query'
+          description: 条码库当前版本编号，取最大的条码id为版本编号（即 count(*) from barcodes），因此条码库id必须保持连续
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+            default: 1
+            example: 1920
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int(4)
+                    default: 1
+                    example: 1
+                  message:
+                    type: string
+                    format: varchar(50)
+                    default: Succeed
+                    example: Succeed
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BarcodeResult'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pushBarcodes:
+    post:
+      summary: 推送机器缓存的条形码信息，依赖于 /ipc/pullJobs, 每次上传一条记录，需要包括条码和对应瓶子的照片
+      operationId: ipcPushBarcodes
+      tags:
+        - ipc
+      requestBody:
+        content:
+          'image/jpeg':
+            schema:
+              type: string
+              format: binary
+              description: 条码对应瓶体拍照
+      parameters:
+        - name: barcode
+          in: "query"
+          description: 条码信息
+          required: true
+          schema:
+            type: string
+            format: varchar(30)
+            example: 6971250000239
+        - name: type
+          in: "query"
+          description: 瓶子类型，通过材质传感器获取
+          required: true
+          schema:
+            type: string
+            format: varchar(4)
+            example: P
+            enum:
+              - P #Plastic 塑料
+              - C #Can 金属
+              - G #Glass 玻璃
+        - name: snapshot
+          in: "query"
+          description: 条码拍照地址，上传图片后获得的图片文件地址
+          required: true
+          schema:
+            type: string
+            format: varchar(250)
+            example: /upload/api/60ddfcdf23a.jpg
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 推送成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pullAndroidSettings:
+    get:
+      summary: 获取机器的新的设置信息，包括机器名称、密码等，依赖于 /ipc/pullJobs
+      operationId: ipcPullAndroidSettings
+      tags:
+        - ipc
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 获取安卓设置成功
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int(4)
+                    default: 1
+                    example: 1
+                  message:
+                    type: string
+                    format: varchar(50)
+                    default: Succeed
+                    example: Succeed
+                  data:
+                    $ref: '#/components/schemas/AndroidSettings'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pullAndroidCommand:
+    get:
+      summary: 获取机器需要执行的命令，依赖于 /ipc/pullJobs，此接口为备用接口
+      operationId: ipcPullAndroidCommand
+      tags:
+        - ipc
+      parameters:
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 发布结果
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int(4)
+                    default: 1
+                    example: 1
+                  message:
+                    type: string
+                    format: varchar(50)
+                    default: Succeed
+                    example: Succeed
+                  command:
+                    type: string
+                    format: varchar(250)
+                    default: "restart"
+                    example: "restart"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ipc/pullAndroidRelease:
+    get:
+      summary: 获取安桌新的版本，依赖于 /ipc/pullJobs
+      operationId: ipcPullAndroidRelease
+      tags:
+        - ipc
+      parameters:
+        - name: version
+          in: 'query'
+          description: 机器当前版本
+          required: true
+          schema:
+              type: string
+              example: "1.0.0.0430"
+        - name: app-id
+          in: 'header'
+          description: 设备安装时候生成的uuid
+          required: true
+          schema:
+            type: string
+            example: 4bed7a9e25ac0534
+        - name: app-key
+          in: 'header'
+          description: rvm 平台的公钥，相对固定的字符串
+          required: true
+          schema:
+            type: string
+            example: MTJmMzM4NzQwZTM2MzE2NTE3ZGQwN2Q2ZDc3MjY3YjUwNzgwZTA2NWVhMWE2MDY1YmE1YmIwNmYzNDJjYTgxNA==
+      responses:
+        '200':
+          description: 版本信息
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int(4)
+                    default: 1
+                    example: 1
+                  message:
+                    type: string
+                    format: varchar(50)
+                    default: Succeed
+                    example: Succeed
+                  data:
+                    $ref: '#/components/schemas/AndroidRelease'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/login:
+    post:
+      summary: 登录
+      operationId: authLogin
+      tags:
+        - auth
+      parameters:
+        - name: username
+          in: 'query'
+          description: 登录用户名
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: 'query'
+          description: 登录密码
+          required: true
+          schema:
+            type: string
+            format: password
+      responses:
+        '200':
+          description: 登录结果
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/resetPassword:
+    post:
+      summary: 登录
+      operationId: authResetPassword
+      tags:
+        - auth
+      parameters:
+        - name: userId
+          in: 'query'
+          description: 用户id
+          required: true
+          schema:
+            type: string
+        - name: oldPassword
+          in: 'query'
+          description: 旧登录密码
+          required: true
+          schema:
+            type: string
+            format: password
+        - name: newPassword
+          in: 'query'
+          description: 新登录密码
+          required: true
+          schema:
+            type: string
+            format: password
+        - name: confirmNewPassword
+          in: 'query'
+          description: 确认二次录入的登录密码
+          required: true
+          schema:
+            type: string
+            format: password
+      responses:
+        '200':
+          description: a pet to be returned
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/regist:
+    post:
+      summary: 注册
+      operationId: authRegist
+      tags:
+        - auth
+      parameters:
+        - name: username
+          in: 'query'
+          description: 用户名
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: 'query'
+          description: 密码
+          required: true
+          schema:
+            type: string
+            format: password
+        - name: confirmPassword
+          in: 'query'
+          description: 确认密码
+          required: true
+          schema:
+            type: string
+            format: password
+        - name: mobile
+          in: 'query'
+          description: 手机号码
+          required: true
+          schema:
+            type: string
+        - name: avatar
+          in: 'query'
+          description: 头像
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: a pet to be returned
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/exit:
+    get:
+      summary: 登出
+      operationId: authExit
+      tags:
+        - auth
+      responses:
+        '200':
+          description: a pet to be returned
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/regions:
+    get:
+      summary: 列出所有设备分类，树状结构
+      operationId: machineRegions
+      tags:
+        - device
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回设备分类列表
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/region/index:
+    get:
+      summary: 列出所有设备分类，树状结构，等同 /machine/regions
+      operationId: machineRegionIndex
+      tags:
+        - device
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回设备分类树状内容
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/region/create:
+    post:
+      summary: 添加一个分类
+      operationId: machineRegionCreate
+      tags:
+        - device
+      parameters:
+        - name: name
+          in: 'query'
+          description: 分类名称
+          required: true
+          schema:
+            type: string
+        - name: comment
+          in: 'query'
+          description: 分类说明
+          schema:
+            type: string
+        - name: parent_id
+          in: 'query'
+          description: 父分类编号，递归，若为0则是新的根节点
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/region/read:
+    get:
+      summary: 查看分类信息
+      operationId: machineRegionRead
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 分类名称
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 返回设备分类信息
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineLocation'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/region/update:
+    post:
+      summary: 更新一个分类
+      operationId: machineRegionUpdate
+      tags:
+        - device
+      parameters:
+        - name: name
+          in: 'query'
+          description: 分类名称
+          required: true
+          schema:
+            type: string
+        - name: comment
+          in: 'query'
+          description: 分类说明
+          schema:
+            type: string
+        - name: parent_id
+          in: 'query'
+          description: 父分类编号，递归，若为0则是新的根节点
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 返回操作成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/region/delete:
+    get:
+      summary: 删除一个分类
+      operationId: machineRegionDelete
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 分类编号
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 返回操作成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/types:
+    get:
+      summary: 查询设备型号列表
+      operationId: MachineTypes
+      tags:
+        - device
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回设备型号列表内容
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MachineType'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/type/index:
+    get:
+      summary: 查询设备型号列表
+      operationId: MachineTypeIndex
+      tags:
+        - device
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回设备型号列表内容
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MachineType'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/type/create:
+    post:
+      summary: 创建设备型号
+      operationId: MachineTypeCreate
+      tags:
+        - device
+      parameters:
+        - name: name
+          in: 'query'
+          description: 分类名称
+          required: true
+          schema:
+            type: string
+        - name: comment
+          in: 'query'
+          description: 分类说明
+          schema:
+            type: string
+        - name: parent_id
+          in: 'query'
+          description: 父分类编号，递归，若为0则是新的根节点
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/type/read:
+    get:
+      summary: 查看设备型号信息
+      operationId: MachineTypeRead
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineType'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/type/update:
+    post:
+      summary: 更新设备型号信息
+      operationId: MachineTypeUpdate
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+        - name: name
+          in: 'query'
+          description: 型号名称
+          required: true
+          schema:
+            type: string
+        - name: comment
+          in: 'query'
+          description: 型号说明
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/type/delete:
+    get:
+      summary: 删除设备型号
+      operationId: MachineTypeDelete
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/machines:
+    get:
+      summary: 查询设备列表
+      operationId: deviceDevices
+      tags:
+        - device
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回设备列表内容
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/machine/index:
+    get:
+      summary: 查询设备列表
+      operationId: deviceDeviceIndex
+      tags:
+        - device
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回设备列表内容
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/machine/create:
+    post:
+      summary: 创建设备
+      operationId: deviceDeviceCreate
+      tags:
+        - device
+      parameters:
+        - name: name
+          in: 'query'
+          description: 设备名称
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/machine/read:
+    get:
+      summary: 查看设备信息
+      operationId: deviceDeviceRead
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/machine/update:
+    post:
+      summary: 查看设备信息
+      operationId: deviceDeviceUpdate
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/machine/delete:
+    get:
+      summary: 查看设备信息
+      operationId: deviceDeviceDelete
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/alerts:
+    get:
+      summary: 查看设备信息
+      operationId: deviceDeviceAlerts
+      tags:
+        - device
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineAlert'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /machine/alert/index:
+    get:
+      summary: 查看设备信息
+      operationId: deviceDeviceAlertIndex
+      tags:
+        - device
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineAlert'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/materials:
+    get:
+      summary: 查看设备信息
+      operationId: contentMaterials
+      tags:
+        - content
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Content'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/material/index:
+    get:
+      summary: 查看设备信息
+      operationId: contentMaterialIndex
+      tags:
+        - content
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Content'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/material/create:
+    post:
+      summary: 查看设备信息
+      operationId: contentMaterialCreate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/material/read:
+    get:
+      summary: 查看设备信息
+      operationId: contentMaterialRead
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/material/update:
+    post:
+      summary: 查看设备信息
+      operationId: contentMaterialUpdate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/material/delete:
+    get:
+      summary: 查看设备信息
+      operationId: contentMaterialDelete
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/categories:
+    get:
+      summary: 查看内容分类
+      operationId: contentCategories
+      tags:
+        - content
+      #parameters:
+      responses:
+        '200':
+          description: 获取内容分类列表
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentCategory'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/category/index:
+    get:
+      summary: 查看设备信息
+      operationId: contentCategoryIndex
+      tags:
+        - content
+      #parameters:
+      responses:
+        '200':
+          description: 获取内容分类列表
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentCategory'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/category/create:
+    post:
+      summary: 创建内容分类
+      operationId: contentCategoryCreate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 内容id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/category/read:
+    get:
+      summary: 查看内容分类信息
+      operationId: contentCategoryRead
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentCategory'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/category/update:
+    post:
+      summary: 更新内容分类信息
+      operationId: contentCategoryUpdate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/category/delete:
+    get:
+      summary: 删除内容分类信息
+      operationId: contentCategoryDelete
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/audit:
+    post:
+      summary: 内容审批
+      operationId: contentAudit
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取内容材料列表成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Content'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /publish/jobs:
+    get:
+      summary: 获取发布任务列表
+      operationId: publishJobs
+      tags:
+        - publish
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublishJob'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /publish/job/index:
+    get:
+      summary: 获取发布任务列表
+      operationId: publishJobIndex
+      tags:
+        - publish
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /publish/job/create:
+    post:
+      summary: 创建发布任务
+      operationId: publishJobCreate
+      tags:
+        - publish
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /publish/job/read:
+    get:
+      summary: 查看发布任务
+      operationId: publishJobRead
+      tags:
+        - publish
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishJob'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /publish/job/update:
+    post:
+      summary: 更新发布任务
+      operationId: publishJobUpdate
+      tags:
+        - publish
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /publish/job/delete:
+    get:
+      summary: 删除发布任务
+      operationId: publishJobDelete
+      tags:
+        - publish
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /publish/audit:
+    post:
+      summary: 获取待审批发布任务
+      operationId: publishAudit
+      tags:
+        - publish
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /publish/log:
+    post:
+      summary: 获取发布日志
+      operationId: publishLog
+      tags:
+        - publish
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublishLog'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/library:
+    get:
+      summary: 获取条形码列表
+      operationId: barcodeLibrary
+      tags:
+        - barcode
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Barcode'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/barcode/index:
+    get:
+      summary: 获取条形码列表
+      operationId: barcodeBarcodeIndex
+      tags:
+        - barcode
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Barcode'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/barcode/create:
+    post:
+      summary: 创建条形码信息
+      operationId: barcodeBarcodeCreate
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/barcode/read:
+    get:
+      summary: 查看条码信息
+      operationId: barcodeBarcodeRead
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Barcode'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/barcode/update:
+    post:
+      summary: 更新条码信息
+      operationId: barcodeBarcodeUpdate
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/barcode/delete:
+    get:
+      summary: 删除条码信息
+      operationId: barcodeBarcodeDelete
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/versions:
+    get:
+      summary: 获取条码版本信息
+      operationId: barcodeVersions
+      deprecated: true
+      tags:
+        - barcode
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BarcodeVersion'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/version/index:
+    get:
+      summary: 获取条码版本信息
+      operationId: barcodeVersionIndex
+      deprecated: true
+      tags:
+        - barcode
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BarcodeVersion'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/synchronise:
+    post:
+      summary: 同步条码信息，给 IPC Job 增加一条记录
+      operationId: barcodeSynchronise
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 同步任务发布成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/unrecognized:
+    post:
+      summary: 获取未识别条码信息
+      operationId: barcodeRecognized
+      tags:
+        - barcode
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Barcode'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/promotions:
+    get:
+      summary: 获取条码活动信息列表
+      operationId: barcodePromotions
+      tags:
+        - barcode
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BarcodePromotion'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/promotion/index:
+    get:
+      summary: 获取条码活动信息列表
+      operationId: barcodePromotionIndex
+      tags:
+        - barcode
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BarcodePromotion'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/promotion/create:
+    post:
+      summary: 创建条码优惠活动
+      operationId: barcodePromotionCreate
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/promotion/read:
+    get:
+      summary: 查看条码优惠活动信息
+      operationId: barcodePromotionRead
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BarcodePromotion'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/promotion/update:
+    post:
+      summary: 更新条码活动信息
+      operationId: barcodePromotionUpdate
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/promotion/delete:
+    get:
+      summary: 删除活动优惠信息，建议直接禁用，不建议直接删除
+      operationId: barcodePromotionDelete
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/promotionsVersions:
+    post:
+      summary: 获取活动版本列表
+      operationId: barcodePromotionVersions
+      deprecated: true
+      tags:
+        - barcode
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BarcodePromotionVersion'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /barcode/promotionSynchronise:
+    post:
+      summary: 活动同步，成功后为 IPC Job 增加一条记录
+      operationId: barcodePromotionSynchronise
+      tags:
+        - barcode
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /recycle/statistics:
+    post:
+      summary: 获取回收统计报表
+      operationId: recycleStatistics
+      tags:
+        - recycle
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecycleStatistic'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /recycle/records:
+    get:
+      summary: 获取回收记录列表
+      operationId: recycleRecords
+      tags:
+        - recycle
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecycleRecord'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/settings:
+    get:
+      summary: 获取系统设置
+      operationId: systemSetting
+      tags:
+        - system
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SystemSetting'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/setting/index:
+    get:
+      summary: 获取系统设置列表
+      operationId: systemSettingIndex
+      tags:
+        - system
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/setting/create:
+    post:
+      summary: 创建系统设置信息
+      operationId: systemSettingCreate
+      tags:
+        - system
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/setting/read:
+    post:
+      summary: 获取系统设置信息
+      operationId: systemSettingRead
+      tags:
+        - system
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemSetting'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/setting/update:
+    post:
+      summary: 更新系统设置信息
+      operationId: systemSettingUpdate
+      tags:
+        - system
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/setting/delete:
+    get:
+      summary: 删除系统设置信息
+      operationId: systemSettingDelete
+      tags:
+        - system
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/android:
+    get:
+      summary: 获取工控机软件版本信息列表
+      operationId: systemAndroid
+      tags:
+        - system
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SystemAndroid'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/android/index:
+    get:
+      summary: 获取安卓版本信息列表
+      operationId: systemAndroidIndex
+      tags:
+        - system
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SystemAndroid'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/android/create:
+    post:
+      summary: 创建系统安卓版本信息
+      operationId: systemAndroidCreate
+      tags:
+        - system
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/android/read:
+    get:
+      summary: 获取安卓版本信息
+      operationId: systemAndroidRead
+      tags:
+        - system
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemAndroid'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/android/update:
+    post:
+      summary: 更新系统安卓版本信息
+      operationId: systemAndroidUpdate
+      tags:
+        - system
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/android/delete:
+    get:
+      summary: 删除系统安卓版本信息
+      operationId: systemAndroidDelete
+      tags:
+        - system
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /system/log:
+    get:
+      summary: 获取系统日志列表
+      operationId: systemLog
+      tags:
+        - system
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SystemLog'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /customer/customers:
+    get:
+      summary: 获取客户信息列表
+      operationId: customerCustomers
+      tags:
+        - customer
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /customer/customer/index:
+    get:
+      summary: 获取客户信息列表
+      operationId: customerCustomerIndex
+      tags:
+        - customer
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /customer/customer/create:
+    post:
+      summary: 创建客户信息
+      operationId: customerCustomerCreate
+      tags:
+        - customer
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /customer/customer/update:
+    post:
+      summary: 更新客户信息
+      operationId: customerCustomerUpdate
+      tags:
+        - customer
+      parameters:
+        - name: id
+          in: 'query'
+          description: 客户Id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /customer/customer/delete:
+    get:
+      summary: 删除账号信息
+      operationId: customerCustomerDelete
+      tags:
+        - customer
+      parameters:
+        - name: id
+          in: 'query'
+          description: 客户
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/accounts:
+    get:
+      summary: 获取账户信息列表
+      operationId: accountAccounts
+      tags:
+        - account
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/account/index:
+    get:
+      summary: 获取账号信息列表
+      operationId: accountAccountIndex
+      tags:
+        - account
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/account/create:
+    post:
+      summary: 创建账号信息
+      operationId: accountAccountCreate
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/account/update:
+    post:
+      summary: 更新账号信息
+      operationId: accountAccountUpdate
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/account/delete:
+    get:
+      summary: 删除账号信息
+      operationId: accountAccountDelete
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/groups:
+    get:
+      summary: 获取账号分组信息列表
+      operationId: accountGroups
+      tags:
+        - account
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountGroup'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/group/index:
+    get:
+      summary: 获取账号分组信息列表
+      operationId: accountGroupIndex
+      tags:
+        - account
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Machine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/group/create:
+    post:
+      summary: 创建账号分组信息
+      operationId: accountGroupCreate
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/group/read:
+    get:
+      summary: 获取账号分组信息
+      operationId: accountGroupRead
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountGroup'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/group/update:
+    post:
+      summary: 更新账号分组信息
+      operationId: accountGroupUpdate
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/group/delete:
+    get:
+      summary: 删除账号分组信息
+      operationId: accountGroupDelete
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/roles:
+    get:
+      summary: 获取账户角色信息列表
+      operationId: accountRole
+      tags:
+        - account
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountRole'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/role/index:
+    get:
+      summary: 获取账户角色信息列表
+      operationId: accountRoleIndex
+      tags:
+        - account
+      parameters:
+        - name: pageSize
+          in: 'query'
+          description: 分页大小
+          schema:
+            type: integer
+            format: int32
+            example: 20
+        - name: pageIndex
+          in: 'query'
+          description: 分页索引
+          schema:
+            type: integer
+            format: int32
+            example: 2
+        - name: sort
+          in: 'query'
+          description: 排序对象
+          schema:
+            type: string
+        - name: search
+          in: 'query'
+          description: 搜索关键字
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountRole'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/role/create:
+    post:
+      summary: 创建账户角色信息
+      operationId: accountRoleCreate
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/role/read:
+    get:
+      summary: 获取账户角色信息
+      operationId: accountRoleRead
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountRole'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/role/update:
+    post:
+      summary: 更新账号角色信息
+      operationId: accountRoleUpdate
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/role/delete:
+    get:
+      summary: 删除账号角色信息
+      operationId: accountRoleDelete
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /account/grant:
+    post:
+      summary: 账号赋权
+      operationId: accountGrant
+      tags:
+        - account
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 赋权成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/security:
+    post:
+      summary: 设置用户安全信息
+      operationId: userSecurity
+      tags:
+        - user
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 设置成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSecurity'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/profile:
+    post:
+      summary: 设置用户基本信息
+      operationId: userProfile
+      tags:
+        - user
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 设置成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/qrcode:
+    get:
+      summary: 出示用户二维码信息
+      operationId: userQrcode
+      tags:
+        - user
+      parameters:
+        - name: total
+          in: 'query'
+          description: 回收总数
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+        - name: machine
+          in: 'query'
+          description: 机器的uuid
+          required: true
+          schema:
+            type: string
+            format: varchar(32)
+        - name: timestamp
+          in: 'query'
+          description: 发生时间戳
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+        - name: barcodes
+          in: 'query'
+          description: 回收的所有条码字符串
+          required: true
+          schema:
+            type: string
+            format: varchar(255)
+        - name: tx
+          in: 'query'
+          description: 回首交易编号， md5(uuid+timestamp) + random (1000-9999)
+          required: true
+          schema:
+            type: string
+            format: varchar(24)
+      responses:
+        '200':
+          description: 设置成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /index/dashboard:
+    get:
+      summary: 显示数据看板
+      operationId: indexDashboard
+      tags:
+        - index
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: A paged array of pets
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    ## 条形码
+    Barcode:
+      required:
+        - barcode
+        - type
+        - bottlename
+      properties:
+        barcode:
+          type: string
+          description: 条形码
+        version_id:
+          type: integer
+          format: int(11)
+          description: version id
+        type:
+          type: string
+          format: char(1)
+          default: "P"
+          enum:
+            - "P" #塑料
+            - "C" #金属
+            - "G" #玻璃
+          description: 条码类型
+        bottlename:
+          type: string
+          description: 瓶子名称
+          default: ""
+          example: "Cola can 330ml"
+        capacity:
+          type: string
+          format: varchar(32)
+          default: "ml"
+          example: "330ml"
+          description: 瓶子容量
+        accumulate_point:
+          type: string
+          description: 瓶子默认积分
+          default: 1
+          example: 1
+        deposit:
+          type: number
+          format: decimal(10,2)
+          description: 瓶子的押金
+          default: 0.2
+          example: 0.2
+        length:
+          type: string
+          format: varchar(10)
+          default: "0"
+          example: "100"
+          description: 瓶子外廓长度
+        width:
+          type: string
+          format: varchar(10)
+          default: "0"
+          example: "50"
+          description: 瓶子外廓宽度
+        status:
+          type: boolean
+          format: tinyint(1)
+          description: 状态值，是否启用。不允许直接删除条码，只能软删除禁用
+          default: true
+          example: true
+          enum:
+            - 0 #禁用
+            - 1 #启用
+    UnrecognizedBarcode:
+      required:
+        - barcode
+        - type
+        - bottlename
+      properties:
+        barcode:
+          type: string
+          description: 条形码
+        type:
+          type: string
+          format: char(1)
+          default: "P"
+          enum:
+            - "P" #塑料
+            - "C" #金属
+            - "G" #玻璃
+          description: 条码类型
+        snapshot:
+          type: string
+          format: varchar(250)
+          description: 未识别条码的照片经上传后的地址
+    BarcodeResult:
+      required:
+        - barcode
+        - type
+        - bottlename
+      properties:
+        barcode:
+          type: string
+          description: 条形码
+          example: 63210492
+        type:
+          type: string
+          format: char(1)
+          default: "P"
+          enum:
+            - "P" #塑料
+            - "C" #金属
+            - "G" #玻璃
+          description: 条码类型
+        bottlename:
+          type: string
+          description: 瓶子名称
+          default: ""
+          example: "Cola can 330ml"
+        accumulate_point:
+          type: string
+          description: 瓶子默认积分
+          default: 1
+          example: 1
+        deposit:
+          type: number
+          format: decimal(10,2)
+          description: 瓶子的押金
+          default: 0.2
+          example: 0.2
+        length:
+          type: string
+          format: varchar(10)
+          default: "0"
+          example: "100"
+          description: 瓶子外廓长度
+        width:
+          type: string
+          format: varchar(10)
+          default: "0"
+          example: "50"
+          description: 瓶子外廓宽度
+        status:
+          type: boolean
+          format: tinyint(1)
+          description: 状态值，是否启用。不允许直接删除条码，只能软删除禁用
+          default: true
+          example: true
+          enum:
+            - 0 #禁用
+            - 1 #启用
+        promotion_accumulate_point:
+          type: string
+          description: |
+            瓶子优惠活动积分，当处于活动时间内，使用 promotion_accumulate_point结算，
+            否则使用 accumulate_point 结算
+          default: 1
+          example: 1
+        promotion_money:
+          type: number
+          format: decimal(10,2)
+          description: |
+            瓶子优惠活动期的押金，当处于活动时间内，使用 promotion_money 和 promotion_accumulate_point 结算，
+            否则使用 money 和 accumulate_point 结算
+          default: 0.2
+          example: 0.2
+        promotion_start_time:
+          type: integer
+          format: int(11)
+          description: |
+            优惠活动开始时间，时间戳记。
+            当机器时间处于开始时间之后，使用promotion_money和promotion_accumulate_point结算，
+            否则使用money和accumulate结算
+          example: 1618000000
+        promotion_end_time:
+          type: integer
+          format: int(11)
+          description:  |
+            优惠活动结束时间，时间戳记。
+            当机器时间处于结束时间之后，使用money和accumulate_point结算
+          example: 1619000000
+    ## 条形码活动
+    BarcodePromotion:
+      required:
+        - barcode
+        - start_time
+        - end_time
+        - accumulate_points
+      properties:
+        barcode:
+          $ref: '#/components/schemas/Barcode'
+        start_time: 
+          type: string
+          format: int(11)
+          description: 开始时间
+        end_time:
+          type: string
+          format: int(11)
+          description: 结束时间
+        accumulate_points: 
+          type: integer
+          format: int32
+          description: 活动时积分
+        comment:
+          type: string
+          description: 活动说明
+        state:
+          type: integer
+          format: int4
+          enum:
+            - init
+            - new
+            - update
+            - delete
+          description: 活动状态
+    ## 条码同步日志
+    BarcodeSyncLog:
+      required:
+        - device
+      properties:
+        device:
+          $ref: '#/components/schemas/Machine'
+          description: 同步的设备
+        sync_time :
+          type: string
+          format: int(11)
+          description: 同步操作的时间
+        mode  :
+          type: integer
+          format: tinyint(1)
+          enum:
+            - all
+            - new
+          description: 同步模式
+        version:
+          $ref: '#/components/schemas/BarcodeVersion'
+        state  :
+          type: integer
+          format: tinyint(1)
+          enum:
+            - failed
+            - succeed
+          description: 同步结果
+    ## 条码版本
+    BarcodeVersion:
+      required:
+        - create_time
+      properties:
+        create_time:
+          type: string
+          format: int(11)
+          description: 版本创建时间
+        url:
+          type: string
+          format: varchar(255)
+          description: 下载地址
+   ## 条码活动版本
+    BarcodePromotionVersion:
+      required:
+        - create_time
+      properties:
+        create_time:
+          type: string
+          format: int(11)
+          description: 版本创建时间
+        url:
+          type: string
+          format: varchar(255)
+          description: 下载地址
+    ## 设备型号
+    MachineType:
+      required:
+        - name
+      properties:
+        # 名称
+        name:
+          type: string
+          format: varchar(100)
+          description: 设备型号名称
+        comment:
+          type: string
+          format: varchar(255)
+          description: 设备描述
+        has_second_screen:
+          type: integer
+          format: boolean
+          description: 是否有第二块屏幕
+    # 设备信息
+    Machine:
+      required:
+        - model
+        - location
+      properties:
+        type:
+          $ref: "#/components/schemas/MachineType"
+        location:
+          $ref: "#/components/schemas/MachineLocation"
+        name:
+          type: string
+          format: varchar(100)
+          description: 机器名称
+        uuid:
+          type: string
+          format: char(32)
+          description: 工厂编号，app自动生成的 uuid
+        sn:
+          type: string
+          format: varchar(50)
+          description: 设备sn，后台设置
+        status:
+          type: integer
+          format: tinyint(1)
+          enum:
+            - offline(0)
+            - online(1)
+          default: 1
+          description: 设备状态
+        state_code:
+          type: integer
+          format: tinyint(4)
+          enum:
+            - normal(0)
+            - overloaded(1)
+            - fatal(2)
+            - no papper(3)
+          description: 设备状态码
+        state_refresh_date:
+          type: string
+          format: int(11)
+          description: 设备状态更新时间
+        pack_date:
+          type: string
+          format: int(11)
+          description: 出厂日期
+        install_date:
+          type: string
+          format: int(11)
+          description: 投放日期
+        install_addr:
+          type: string
+          format: varchar(255) 
+          description: 投放地址
+        is_full:
+          type: integer
+          format: boolean
+          enum:
+            - Not Yet(false)
+            - Yes(true)
+          default: false
+          description: 是否已满
+        region:
+          type: string
+          description: 所属国家
+    MachineLocation:
+      required:
+        - name
+        - parent_id
+      properties:
+        name:
+          type: string
+          format: varchar(100) 
+          description: 地区名称
+        comment:
+          type: string
+          format: varchar(255) 
+          description: 地区说明
+        parent_id:
+          type: integer
+          format: int(11)
+          default: 0
+          description: 父id
+        position:
+          type: string
+          format: text
+          description: 地点标注数据，json格式
+        status:
+          type: integer
+          format: tinyint(1)
+          enum:
+            - disabled(0)
+            - enabled(1)
+          default: 1
+          description: 状态之值
+    MachineAlert:
+      required:
+        - device
+      properties:
+        device:
+          $ref: "#/components/schemas/Machine"
+        type:
+          type: integer
+          format: int(4)
+          enum:
+            - 0 #点击过载
+            - 1 #桶满
+            - 2 #桶满恢复
+            - 3 #过载恢复
+            - 4 #机器故障
+            - 5 #机器故障恢复
+            - 6 #缺纸
+            - 7 #缺纸恢复
+          description: 警报类型
+        create_time:
+          type: string
+          format: int(11)
+          description: 报警时间
+        comment:
+          type: string
+          format: varchar(255)
+          description: 报警内容
+    Content:
+      required:
+        - id
+      properties:
+        title:
+          type: string
+          format: varchar(100)
+          description: 内容标题
+        content:
+          type: string
+          format: text
+          description: 内容文字
+        type:
+          type: integer
+          format: tinyint(1)
+          enum:
+            - 1 #一体机文字
+            - 2 #一体机待机广告
+            - 3 #广告屏广告
+          default: 1
+          description: 内容类型
+        attachment_url:
+          type: string
+          format: varchar(255)
+          description: 内容附件地址
+        is_audited:
+          type: integer
+          format: boolean
+          enum:
+            - 未通过审计(false)
+            - 通过审计(true)
+          default: false
+          description: 警报类型
+    ContentCategory:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          format: varchar(30)
+          description: 分类名称
+        comment:
+          type: string
+          format: varchar(255)
+          description: 分类介绍
+    PublishJob:
+      required:
+        - id
+      properties:
+        machine_id:
+          type: integer
+          format: int(11)
+          description: 需要运行的机器编号
+        content:
+          type: string
+          format: varchar(255)
+          description: 广告内容，如果是文字内容则直接显示，如果是url地址，则需要下载对应的多媒体内容（广告）
+        start_time:
+          type: integer
+          format: int(11)
+          default: "0"
+          description: |
+            开始播放时间，timestamp格式
+        end_time:
+          type: integer
+          format: int(11)
+          default: "0"
+          description: |
+            结束播放时间，timestamp格式
+        status:
+          type: integer
+          format: tinyint(1)
+          enum:
+            - 0 #未完成
+            - 1 #已完成
+          description: 任务执行状态
+    PublishJobResult:
+      properties:
+        content:
+          type: string
+          format: varchar(255)
+          description: 广告内容，如果是文字内容则直接显示，如果是url地址，则需要下载对应的多媒体内容（广告）
+        type:
+          type: integer
+          format: smallint(6)
+          description: 发布播放的类型，1：广告屏文字，2：广告屏广告，3：触摸屏广告，暂时只支持图片
+          default: 2
+          example: 2
+          enum:
+            - 1 #Main Screen Notes 广告屏文字，保留，暂不使用
+            - 2 #Main Screen Adv. 广告屏广告，可以是图片或者视频
+            - 3 #Touch Screen Adv. 触摸屏广告，暂时只支持图片
+        file_type:
+          type: integer
+          format: tinyint(1)
+          description: 广告内容的文件类型，用于下载时候判断。1：图片，2：视频
+          default: 1
+          example: 1
+          enum:
+            - 1 # images 图片
+            - 2 # videos 视频
+        start_time:
+          type: integer
+          format: int(11)
+          default: "0"
+          description: |
+            开始播放时间，timestamp格式
+        end_time:
+          type: integer
+          format: int(11)
+          default: "0"
+          description: |
+            结束播放时间，timestamp格式
+    RecycleStatistic:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    RecycleRecord:
+      required:
+        - barcode
+        - tx
+        - total
+        - accumulate_points
+        - money
+        - recycle_time
+      properties:
+        total:
+          type: integer
+          format: tiny(4)
+          example: 3
+        barcode:
+          type: string
+          format: text
+          example: 6921168511280
+        tx:
+          type: string
+          format: char(20)
+          example: c35bf9b77de89fd84932
+        accumulate_points:
+          type: integer
+          format: tinyint(4)
+          example: 3
+        money:
+          type: number
+          format: decimal(10,2)
+          example: 0.6
+        recycle_time:
+          type: integer
+          format: timestamp
+          example: 1619081649
+    AndroidSettings:
+      properties:
+        machine_type:
+          type: string
+          format: varchar(100)
+          description: 机器类型，直接使用类型名称字符串，例如：RVM400
+          default: RVM400
+          example: RVM400
+        password:
+          type: string
+          format: varchar(50)
+          default: "123456"
+          example: "123456"
+        name:
+          type: string
+          format: varchar(50)
+          description: 机器的名称
+          default: ""
+          example: "E40001"
+        company_name:
+          type: string
+          format: varchar(255)
+          default: ""
+          example: "ACM"
+        company_logo:
+          type: string
+          format: varchar(250)
+          description: 企业logo下载地址
+          default: ""
+          example: "http://rvm.enet51.com/uploads/images/20210422/sdfabafaba.png"
+        qrcode_url:
+          type: string
+          format: varchar(250)
+          description: 企业的qrcode地址
+          default: ""
+          example: "https://www.qq.com/qrcode?a=A&b=B"
+        company_website:
+          type: string
+          format: varchar(250)
+          description: 企业网站地址
+          default: ""
+          example: "https://www.qq.com"
+        company_code_type:
+          type: integer
+          format: tiny(4)
+          description: 打印小票时使用的编码类型：1-二维码，2-code128，3-EAN13
+          example: 1
+          enum:
+            - 0 #不打印条码或者二维码
+            - 1 #二维码
+            - 2 #CODE128
+            - 3 #EAN13
+        company_point_name:
+          type: string
+          format: varchar(15)
+          description: 小票上积分名称
+          default: "EcoPoints"
+          example: "QQPoints"
+        company_receipt_line_1:
+          type: string
+          format: varchar(250)
+          description: 小票提示信息第1行
+          default: ""
+          example: "To findd out where your EcoPoints can be redeemed, please refer to information provided on the machine."
+        company_receipt_line_2:
+          type: string
+          format: varchar(250)
+          description: 小票提示信息第2行
+          default: ""
+          example: "Ecovend cannot be held responsible for points not redeemable."
+        company_receipt_line_3:
+          type: string
+          format: varchar(250)
+          description: 小票提示信息第3行
+          default: ""
+          example: "Thank you for protecting our precious environment."
+        company_receipt_prefix:
+          type: string
+          format: char(6)
+          description: 小票条码前六位，以字符串形式存储，需要做类型转换
+          example: 910204
+        company_images:
+          type: string
+          format: text
+          description: 显示在小票下面的LOGO图片组，所有图片需要预先处理成一张图片
+          example: "http://rvm.enet51.com/upload/admin/201206/45sdf325.jpg"
+    AndroidCommand:
+      properties:
+        command:
+          type: string
+          format: varchar(250)
+          default: "reset"
+          example: "reset"
+          description: 需要执行的命令
+        timestamp:
+          type: integer
+          format: int(11)
+          description: 需要执行命令的时间点
+          default: 0
+          example: 1619137200
+    AndroidRelease:
+      properties:
+        version:
+          type: string
+          format: varchar(30)
+          default: "1.0.0"
+          example: "1.0.0.050601"
+          description: 版本信息
+        url:
+          type: string
+          format: varchar(250)
+          description: 新版本下载地址
+          default: https://rvm.ecovend.uk/static/upload/file/rvm-1.0.0.050601.apk
+          example: https://rvm.ecovend.uk/static/upload/file/rvm-1.0.0.050601.apk
+    PublishLog:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    SystemSetting:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    SystemAndroid:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    SystemLog:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    Customer:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        email:
+          type: string
+          format: email, varchar(100)
+        nickname:
+          type: string
+          format: varchar(30)
+        address:
+          type: string
+          format: varchar(255)
+        avatar:
+          type: string
+          format: varchar(255)
+        mobile:
+          type: string
+          format: varchar(25)
+        verify:
+          type: string
+          format: char(6)
+    Account:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    AccountGroup:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    AccountRole:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    UserSecurity:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    UserProfile:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        name:
+          type: string
+    RemoteJobs:
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        machine_id:
+          type: integer
+          format: int(11)
+          description: 需要运行任务的机器编号
+        type:
+          type: integer
+          format: tinyint(1)
+          enum:
+            - 0 #获取新的广告
+            - 1 #获取新的条码
+            - 2 #获取新的设置
+            - 3 #获取新的命令
+            - 4 #获取新的版本
+          default: 0
+          description: |
+            业务类型。获取新的广告、新的条码、新的机器设置、新的命令等
+        status:
+          type: integer
+          format: tinyint(1)
+          enum:
+            - 0 #In Queue
+            - 1 #Finished
+        comment:
+          type: string
+          format: varchar(255)
+          description: 任务的备注信息
+    RemoteJobsResult:
+      properties:
+        id:
+          type: integer
+          format: int(11)
+        type:
+          type: integer
+          format: tinyint(1)
+          enum:
+            - 0 #获取新的广告
+            - 1 #获取新的条码
+            - 2 #获取新的设置
+            - 3 #获取新的命令
+            - 4 #获取新的版本
+          default: 0
+          description: |
+            业务类型。获取新的广告、新的条码、新的机器设置、新的命令等
+        comment:
+          type: string
+          format: varchar(255)
+          description: 任务的备注信息
+    PlcError:
+      properties:
+        unit:
+          type: string
+          format: varchar(10)
+          description: 元件
+          default: 'M850'
+          example: 'M850'
+        status:
+          type: integer
+          format: tinyint(1)
+          enum:
+            - 0 #复位，无报警
+            - 1 #置位，有报警
+          description: 警报状态
+    Success:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int(4)
+          default: 1
+        message:
+          type: string
+          example: "Succeed"
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int(4)
+          default: 0
+        message:
+          type: string
+          example: "Operation Failed"
