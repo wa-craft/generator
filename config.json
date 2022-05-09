@@ -1,6 +1,23 @@
 {
+    "command-line": "",
     "frontend": "react-antd-umi",
     "backend": "thinkphp6-fpm",
     "data": "./sample/rvm.yaml",
-    "target": "./output"
+    "target": "./output",
+    "operation": {
+        "auth": "",
+        "container": "",
+        "databases": {
+            "relation": "mariadb",
+            "timesieries": "tdengine",
+            "kv": "redis",
+            "graph": ""
+        },
+        "dns": "",
+        "http": "nginx",
+        "mesh": "",
+        "mq": "",
+        "storage": ""
+    },
+    "schema": "rdb/mariadb,kv/redis"
 }
