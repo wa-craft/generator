@@ -1,0 +1,13 @@
+{
+  "imports": {
+    "https://cdn.skypack.dev/": "./cdn.skypack.dev/",
+    "https://cdn.skypack.dev/mri": "./cdn.skypack.dev/mri.js",
+    "https://deno.land/": "./deno.land/",
+    "https://unpkg.com/": "./unpkg.com/"
+  },
+  "scopes": {
+    "./cdn.skypack.dev/": {
+      "/-/mri@v1.2.0-GXZUE9rTNy9jmiiaKeNR/dist=es2019,mode=imports/optimized/mri.js": "./cdn.skypack.dev/-/mri@v1.2.0-GXZUE9rTNy9jmiiaKeNR/dist=es2019,mode=imports/optimized/mri.js"
+    }
+  }
+}
