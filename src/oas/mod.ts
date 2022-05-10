@@ -1,6 +1,5 @@
-import * as path from './path/mod.ts';
-import * as schema from './schema/mod.ts';
-import * as types from './types.ts';
 import { Oas } from './Oas.ts';
+export * from './path/mod.ts';
+export * from './schema/mod.ts';
 
-export { Oas, path, schema, types };
+export { Oas };

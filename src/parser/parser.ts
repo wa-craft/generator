@@ -1,15 +1,15 @@
 // deno-lint-ignore-file no-explicit-any
+import * as OasType from '../oas/path/mod.ts';
+import { Oas } from '../oas/Oas.ts';
 /**
  * yaml parser
  * @param data
  */
 const parse = (data: any) => {
-	for (const path of Object.keys(data.paths)) {
-		console.log('path: ' + path + ', value: ' + data.paths[path]);
-	}
-	console.log(
-		'yaml parser, with ' + (data.swagger ?? data.openapi ?? 'error'),
-	);
+	let oas = new Oas();
+
+	oas.load(data);
+	oas.echo();
 };
 
 export { parse };
