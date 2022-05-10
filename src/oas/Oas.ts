@@ -1,12 +1,12 @@
-import * as types from './path/mod.ts';
+import { Info, Path, Server, Tag } from './path/mod.ts';
 
 /** */
 class Oas {
 	openapi!: string;
-	info!: types.Info;
-	servers!: types.Server[];
-	tags!: types.Tag[];
-	paths!: types.Path[];
+	info!: Info;
+	servers!: Server[];
+	tags!: Tag[];
+	paths!: Path[];
 }
 
 export { Oas };
