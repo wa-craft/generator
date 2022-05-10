@@ -1,8 +1,9 @@
 import yargs from "https://deno.land/x/yargs@v17.4.1-deno/deno.ts";
-import { GenerateCommand } from './src/cmd/mod.ts';
+import * as cmd from './src/cmd/mod.ts';
 
 yargs(Deno.args)
-    .command(GenerateCommand)
+    .command(cmd.generateCommandModule)
+    .command(cmd.serveCommandModule)
     .strictCommands()
     .demandCommand(1)
     .example('$0 -A craft.ts <command> <options>')

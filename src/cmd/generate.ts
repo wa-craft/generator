@@ -4,7 +4,7 @@ import { readYaml } from "https://deno.land/x/garn_yaml@0.2.1/mod.ts";
 import { fileExists } from "../util/mod.ts";
 import * as parser from "../parser/mod.ts";
 
-const GenerateCommand = {
+const generateCommandModule = {
     command: 'generate',
     describe: 'generate codes',
     builder: (yargs: any) => {
@@ -99,4 +99,4 @@ const GenerateCommand = {
     }
 };
 
-export { GenerateCommand };
+export { generateCommandModule };
