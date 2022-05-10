@@ -1,2 +1,1 @@
-export * from "./yaml.ts";
-export * from "./json.ts";
+export * from "./parser.ts";

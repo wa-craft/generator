@@ -83,7 +83,6 @@ const GenerateCommand = {
             }
 
             data = JSON.parse(dataContent);
-            parser.jsonParser(data);
         } else if (extension === "yaml" || extension === "yml") {
             const yamlObject = await readYaml(config.data);
             if(typeof yamlObject !== 'object') {
@@ -91,11 +90,12 @@ const GenerateCommand = {
                 return;
             }
             data = yamlObject;
-            parser.yamlParser(data);
         } else {
             console.error('data file must in json or yaml format!');
             return;
         }
+
+        parser.parse(data);
     }
 };
 
