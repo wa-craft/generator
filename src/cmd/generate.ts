@@ -24,9 +24,9 @@ const generateCommandModule = {
 			alias: 'b',
 			describe: 'backend framework',
 		}).example([
-			['generate -c config.json', 'using a config file'],
+			['wc generate -c config.json', 'using a config file'],
 			[
-				'generate -d sample.json -f react-antd-umi -b thinkphp6-fpm -t ./output',
+				'wc generate -d sample.json -f react-antd-umi -b thinkphp6-fpm -t ./output',
 				'do not use a config file',
 			],
 		]);

@@ -2,7 +2,7 @@
     "command-line": "",
     "frontend": "react-antd-umi",
     "backend": "thinkphp6-fpm",
-    "data": "./example/example.yaml",
+    "data": "./example/test.yaml",
     "target": "./output",
     "operation": {
         "auth": "",
