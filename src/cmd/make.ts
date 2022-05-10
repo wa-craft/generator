@@ -18,8 +18,8 @@ const makeCommandModule = {
 	},
 	handler: async (argv: Arguments) => {
 		if (argv.type !== undefined) {
-			switch (argv.type)           {
-				        case 'controller':
+			switch (argv.type) {
+				case 'controller':
 					break;
 				case 'model':
 					break;
