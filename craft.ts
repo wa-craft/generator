@@ -3,6 +3,7 @@ import * as cmd from './src/cmd/mod.ts';
 
 yargs(Deno.args)
     .command(cmd.generateCommandModule)
+    .command(cmd.makeCommandModule)
     .command(cmd.serveCommandModule)
     .strictCommands()
     .demandCommand(1)
