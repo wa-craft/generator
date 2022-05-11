@@ -8,23 +8,42 @@ class Oas {
 	tags: Tag[] = [];
 	paths: Path[] = [];
 
-	load = (data: any): any => {
+	constructor(data:any) {
+		this.load(data);
+	}
+
+	/**
+	 * init the object by load from data
+	 * @param data 
+	 */
+	load(data: any): void {
+		//openapi
+		this.openapi = data?.openapi;
+
+		//info
 		this.info = data?.info;
+		
+		//servers
 		data?.servers.forEach((server: Server) => {
 			this.servers.push(server);
 		});
 
+		//tags
 		data?.tags.forEach((tag: Tag) => {
 			this.tags.push(tag);
 		});
 
+		//paths
 		for (const path of Object.keys(data?.paths)) {
 			this.paths.push(data?.paths[path]);
 		}
 	};
 
-	echo(): void {
-		console.log(this);
+	/**
+	 * print the class in console
+	 */
+	dump(): void {
+		console.info(this);
 	}
 }
 

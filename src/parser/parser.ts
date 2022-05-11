@@ -4,11 +4,9 @@ import { Oas } from '../oas/Oas.ts';
  * yaml parser
  * @param data
  */
-const parse = (data: any) => {
-	let oas = new Oas();
-
-	oas.load(data);
-	oas.echo();
+function parse (data: any) {
+	let oas = new Oas(data);
+	oas.dump();
 };
 
 export { parse };
