@@ -100,7 +100,9 @@ const generateCommandModule = {
 			console.error('data file must in json or yaml format!');
 			return;
 		}
-
+		
+		data.config = config;
+		
 		parser.parse(data);
 	},
 };
