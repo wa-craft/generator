@@ -8,6 +8,7 @@ function parse (data: any) {
 	let oas = new Oas(data);
 	const craft = oas.toCraft();
 	craft.generate();
+	//oas.dump();
 };
 
 export { parse };

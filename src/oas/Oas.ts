@@ -8,6 +8,7 @@ class Oas {
 	servers: Server[] = [];
 	tags: Tag[] = [];
 	paths: Path[] = [];
+	config: any = {};
 
 	constructor(data:any) {
 		this.load(data);
@@ -38,6 +39,8 @@ class Oas {
 		for (const path of Object.keys(data?.paths)) {
 			this.paths.push(data?.paths[path]);
 		}
+
+		this.config = data?.config;
 	};
 
 	/**
