@@ -45,6 +45,13 @@ class Oas {
 	dump(): void {
 		console.info(this);
 	}
+
+	/**
+	 * turn oas object to craft object
+	 */
+	toCraft() {
+
+	}
 }
 
 export { Oas };

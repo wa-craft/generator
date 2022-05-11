@@ -6,7 +6,7 @@ import { Oas } from '../oas/Oas.ts';
  */
 function parse (data: any) {
 	let oas = new Oas(data);
-	oas.dump();
+	oas.toCraft();
 };
 
 export { parse };
