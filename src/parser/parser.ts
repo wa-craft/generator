@@ -6,7 +6,8 @@ import { Oas } from '../oas/Oas.ts';
  */
 function parse (data: any) {
 	let oas = new Oas(data);
-	oas.toCraft();
+	const craft = oas.toCraft();
+	craft.generate();
 };
 
 export { parse };

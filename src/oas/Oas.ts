@@ -1,4 +1,5 @@
 import { Info, Path, Server, Tag } from './path/mod.ts';
+import { Craft } from '../craft/mod.ts';
 
 /** */
 class Oas {
@@ -49,8 +50,9 @@ class Oas {
 	/**
 	 * turn oas object to craft object
 	 */
-	toCraft() {
-
+	toCraft():Craft {
+		let craft = new Craft();
+		return craft;
 	}
 }
 
