@@ -1,7 +1,6 @@
 // deno-lint-ignore-file
 import { Arguments } from 'https://deno.land/x/yargs@v17.4.1-deno/deno-types.ts';
-import { readYaml } from 'https://deno.land/x/garn_yaml@0.2.1/mod.ts';
-import { fileExists } from '../util/mod.ts';
+import { fileExists, loadJsonObjectFromFile } from '../util/mod.ts';
 import * as parser from '../parser/mod.ts';
 
 const generateCommandModule = {
@@ -45,23 +44,11 @@ const generateCommandModule = {
 			argv.config !== true
 		) {
 			//set params
-			if (!await fileExists(argv.config)) {
-				console.log('Ensure config file exists');
-				return;
-			}
-
-			const configContent = await Deno.readTextFile(argv.config);
-
-			if (configContent === '') {
-				console.log('read config file failed!');
-				return;
-			}
-
-			config = JSON.parse(configContent);
+			config = await loadJsonObjectFromFile(argv.config ?? 'config.json');
 		} else {
 			//set config params with default values
 			if (argv.config === false) {
-				config.data = argv.data ?? 'sample/sample.json';
+				config.data = argv.data ?? 'example/test.yaml';
 				config.target = argv.target ?? './output';
 				config.frontend = argv.frontend ?? 'react-antd-umi';
 				config.backend = argv.backend ?? 'deno-oak';
@@ -72,38 +59,14 @@ const generateCommandModule = {
 		}
 
 		//read data
-		if (!await fileExists(config.data)) {
-			console.error('Ensure data file exists');
+		const data = await loadJsonObjectFromFile(
+			config.data ?? 'example/test.yaml',
+		);
+
+		if (await data === false) {
+			console.error('Load data failed!');
 			return;
 		}
-		//yaml or json
-		const dataFileNameArray = config.data.split('.');
-		const extension = dataFileNameArray[dataFileNameArray.length - 1];
-		let data;
-
-		if (extension === 'json') {
-			const dataContent = await Deno.readTextFile(config.data);
-			if (dataContent === '') {
-				console.error('read data file failed!');
-				return;
-			}
-
-			data = JSON.parse(dataContent);
-		} else if (extension === 'yaml' || extension === 'yml') {
-			const yamlObject = await readYaml(config.data);
-			if (typeof yamlObject !== 'object') {
-				console.error('read data file failed!');
-				return;
-			}
-			data = yamlObject;
-		} else {
-			console.error('data file must in json or yaml format!');
-			return;
-		}
-
-		//
-
-		data.config = config;
 
 		parser.parse(data);
 	},

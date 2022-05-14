@@ -8,6 +8,5 @@ yargs(Deno.args)
     .strictCommands()
     .demandCommand(1)
     .example('$0 -A craft.ts <command> <options>')
-    .help('help')
-    .version('0.0.1')
+    .version('0.0.2')
     .parse();
