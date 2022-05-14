@@ -1,4 +1,5 @@
 vendor/
+output/
 example/test.yaml
 
 craft.bundle.ts
