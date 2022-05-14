@@ -68,7 +68,7 @@ const generateCommandModule = {
 			return;
 		}
 
-		parser.parse(data);
+		parser.parse(data, config);
 	},
 };
 

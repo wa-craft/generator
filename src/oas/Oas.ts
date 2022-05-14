@@ -1,8 +1,8 @@
 import { Info, Path, Server, Tag } from './path/mod.ts';
-import { Craft } from '../craft/mod.ts';
+import { IGenerator } from '../IGenerator.ts';
 
 /** */
-class Oas {
+class Oas implements IGenerator {
 	openapi: string = '';
 	info!: Info;
 	servers: Server[] = [];
@@ -10,7 +10,8 @@ class Oas {
 	paths: Path[] = [];
 	config: any = {};
 
-	constructor(data: any) {
+	constructor(data: any, config: any) {
+		this.config = config;
 		this.load(data);
 	}
 
@@ -53,9 +54,7 @@ class Oas {
 	/**
 	 * turn oas object to craft object
 	 */
-	toCraft(): Craft {
-		let craft = new Craft();
-		return craft;
+	generate(): void {
 	}
 }
 

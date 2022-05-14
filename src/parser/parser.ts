@@ -4,10 +4,9 @@ import { Oas } from '../oas/Oas.ts';
  * yaml parser
  * @param data
  */
-function parse(data: any) {
-	let oas = new Oas(data);
-	const craft = oas.toCraft();
-	craft.generate();
+function parse(data: any, config: any) {
+	let oas = new Oas(data, config);
+	oas.generate();
 	//oas.dump();
 }
 

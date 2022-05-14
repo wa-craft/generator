@@ -5,10 +5,13 @@ const makeCommandModule = {
 	command: 'make',
 	describe: 'make seperated type codes',
 	builder: (yargs: any) => {
-		return yargs.option('type <type>', {
+		return yargs.option('type', {
 			alias: 't',
 			describe:
 				'make a class file by <type>, type will be one of: controller|model|view|event|middleware|router|validator|helper',
+		}).option('path', {
+			alias: 'p',
+			describe: 'file path to generate code',
 		}).example([
 			[
 				'make -c app.admin.controller.Index',
@@ -17,6 +20,8 @@ const makeCommandModule = {
 		]);
 	},
 	handler: async (argv: Arguments) => {
+		const path = argv.path ?? './output';
+
 		if (argv.type !== undefined) {
 			switch (argv.type) {
 				case 'controller':
@@ -24,6 +29,7 @@ const makeCommandModule = {
 				case 'model':
 					break;
 				case 'view':
+					console.log('view');
 					break;
 				case 'event':
 					break;
