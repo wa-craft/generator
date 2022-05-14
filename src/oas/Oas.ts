@@ -1,7 +1,12 @@
+import {
+	copy,
+	emptyDirSync,
+	ensureFileSync,
+} from 'https://deno.land/std@0.139.0/fs/mod.ts';
+
 import { Info, Path, Server, Tag } from './path/mod.ts';
 import { IGenerator } from '../IGenerator.ts';
-
-import { copy, emptyDirSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
+import { fileExists } from '../util/file.ts';
 
 /** */
 class Oas implements IGenerator {
@@ -68,7 +73,7 @@ class Oas implements IGenerator {
 	 */
 	generate(): void {
 		//create target directories
-		const source = './plugin';
+		const source = 'plugin';
 		const target = this.config.target ?? './output';
 		emptyDirSync(target);
 		console.info(`[generate:dir]: ${target}`);
@@ -95,14 +100,30 @@ class Oas implements IGenerator {
 			console.info(`[generate:copy]: ${target}/${this.config.backend}`);
 		}
 
-		//import plugin handler and generate codes
-		import(
-			`../../${source}/frontend/${this.config.frontend}/handler/mod.ts`
-		).then((Plugin) => {
-			//iterate all of the plugin handlers and run generate functions
-			for (const id of Object.keys(Plugin)) {
-				let handler = new Plugin[id](this.data);
-				handler?.generate();
+		//import plugin handlers and generate codes
+		['frontend', 'backend', 'command-line'].forEach(async (element) => {
+			let fw;
+			let pluginPath;
+			for (const key of Object.keys(this.config)) {
+				if (key === element) {
+					fw = this.config[key] ?? '';
+				}
+			}
+
+			pluginPath = `./${source}/${element}/${fw}/handler/mod.ts`;
+			if (fw !== '' && fw !== undefined) {
+				console.log(pluginPath);
+				if (await fileExists(pluginPath)) {
+					import('../../' + pluginPath).then((Plugin) => {
+						//iterate all of the plugin handlers and run generate functions
+						for (const id of Object.keys(Plugin)) {
+							let handler = new Plugin[id](this.data);
+							handler?.generate();
+						}
+					});
+				} else {
+					console.error(`Plugin path [${pluginPath}] is not exists!`);
+				}
 			}
 		});
 	}

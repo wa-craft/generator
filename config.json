@@ -2,6 +2,7 @@
     "command-line": "",
     "frontend": "typescript/react17-antd-umi",
     "backend": "php/thinkphp6-fpm",
+    "commandline": "",
     "data": "./example/test.yaml",
     "target": "./output",
     "operation": {
