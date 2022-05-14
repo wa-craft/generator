@@ -1,6 +1,6 @@
 {
     "command-line": "",
-    "frontend": "react-antd-umi",
+    "frontend": "react17-antd-umi",
     "backend": "thinkphp6-fpm",
     "data": "./example/test.yaml",
     "target": "./output",
