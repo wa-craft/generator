@@ -12,6 +12,10 @@ class Craft {
 	 */
 	generate() {
 	}
+
+	dump(): void {
+		console.info('craft');
+	}
 }
 
 export { Craft };

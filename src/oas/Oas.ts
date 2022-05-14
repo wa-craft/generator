@@ -1,7 +1,7 @@
 import { Info, Path, Server, Tag } from './path/mod.ts';
 import { IGenerator } from '../IGenerator.ts';
 
-import { copy, emptyDir } from 'https://deno.land/std@0.139.0/fs/mod.ts';
+import { copy, emptyDirSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
 
 /** */
 class Oas implements IGenerator {
@@ -10,10 +10,13 @@ class Oas implements IGenerator {
 	servers: Server[] = [];
 	tags: Tag[] = [];
 	paths: Path[] = [];
+	schemas: any = [];
 	config: any = {};
+	data: any = {};
 
 	constructor(data: any, config: any) {
 		data.config = config;
+		this.data = data;
 		this.load(data);
 	}
 
@@ -40,6 +43,11 @@ class Oas implements IGenerator {
 			this.tags.push(tag);
 		});
 
+		//schemas
+		for (const schema of Object.keys(data?.components?.schemas)) {
+			this.schemas.push(data?.components?.schemas[schema]);
+		}
+
 		//paths
 		for (const path of Object.keys(data?.paths)) {
 			this.paths.push(data?.paths[path]);
@@ -62,13 +70,14 @@ class Oas implements IGenerator {
 		//create target directories
 		const source = './plugin';
 		const target = this.config.target ?? './output';
-		emptyDir(target);
+		emptyDirSync(target);
 		console.info(`[generate:dir]: ${target}`);
 
 		//create frontend template & copy resource files
 		if (this.config.frontend !== undefined && this.config.frontend !== '') {
+			emptyDirSync(`${target}/frontend`);
 			copy(
-				`${source}/frontend/typescript/${this.config.frontend}/resource`,
+				`${source}/frontend/${this.config.frontend}/resource`,
 				`${target}/frontend`,
 				{ overwrite: true },
 			);
@@ -77,13 +86,25 @@ class Oas implements IGenerator {
 
 		//create backend template & copy resource files
 		if (this.config.backend !== undefined && this.config.backend !== '') {
+			emptyDirSync(`${target}/backend`);
 			copy(
-				`${source}/backend/php/${this.config.backend}/resource`,
+				`${source}/backend/${this.config.backend}/resource`,
 				`${target}/backend`,
 				{ overwrite: true },
 			);
 			console.info(`[generate:copy]: ${target}/${this.config.backend}`);
 		}
+
+		//import plugin handler and generate codes
+		import(
+			`../../${source}/frontend/${this.config.frontend}/handler/mod.ts`
+		).then((Plugin) => {
+			//iterate all of the plugin handlers and run generate functions
+			for (const id of Object.keys(Plugin)) {
+				let handler = new Plugin[id](this.data);
+				handler?.generate();
+			}
+		});
 	}
 }
 
