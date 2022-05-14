@@ -1,12 +1,9 @@
 import { IGenerator } from './IGenerator.ts';
 
-/**
- * 
- */
+/** */
 class Project implements IGenerator {
-    generate(): void {
-
-    }
+	generate(): void {
+	}
 }
 
 export { Project };

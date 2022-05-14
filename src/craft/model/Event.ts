@@ -1,12 +1,9 @@
 import { IGenerator } from './IGenerator.ts';
 
-/**
- * 
- */
+/** */
 class Event implements IGenerator {
-    generate(): void {
-
-    }
+	generate(): void {
+	}
 }
 
 export { Event };

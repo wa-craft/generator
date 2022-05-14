@@ -1,12 +1,9 @@
 import { IGenerator } from './IGenerator.ts';
 
-/**
- * 
- */
+/** */
 class Validator implements IGenerator {
-    generate(): void {
-
-    }
+	generate(): void {
+	}
 }
 
 export { Validator };

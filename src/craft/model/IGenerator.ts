@@ -1,5 +1,5 @@
 interface IGenerator {
-    generate(): void;
-};
+	generate(): void;
+}
 
 export type { IGenerator };

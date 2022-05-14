@@ -1,12 +1,9 @@
 import { IGenerator } from './IGenerator.ts';
 
-/**
- * 
- */
+/** */
 class Router implements IGenerator {
-    generate(): void {
-
-    }
+	generate(): void {
+	}
 }
 
 export { Router };

@@ -2,20 +2,19 @@
  * a singleton config object
  */
 class Config {
-    data:any = {};
-    private static _instance: Config;
+	data: any = {};
+	private static _instance: Config;
 
-    private constructor() {
+	private constructor() {
+	}
 
-    }
+	static getInstance(): Config {
+		return this._instance ?? new this();
+	}
 
-    static getInstance(): Config {
-        return this._instance ?? new this();
-    }
-
-    init(data: any): void {
-        this.data = data;
-    }
+	init(data: any): void {
+		this.data = data;
+	}
 }
 
 export { Config };

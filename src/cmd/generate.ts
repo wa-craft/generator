@@ -104,7 +104,7 @@ const generateCommandModule = {
 		//
 
 		data.config = config;
-		
+
 		parser.parse(data);
 	},
 };

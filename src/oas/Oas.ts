@@ -10,13 +10,13 @@ class Oas {
 	paths: Path[] = [];
 	config: any = {};
 
-	constructor(data:any) {
+	constructor(data: any) {
 		this.load(data);
 	}
 
 	/**
 	 * init the object by load from data
-	 * @param data 
+	 * @param data
 	 */
 	load(data: any): void {
 		//openapi
@@ -24,7 +24,7 @@ class Oas {
 
 		//info
 		this.info = data?.info;
-		
+
 		//servers
 		data?.servers.forEach((server: Server) => {
 			this.servers.push(server);
@@ -41,7 +41,7 @@ class Oas {
 		}
 
 		this.config = data?.config;
-	};
+	}
 
 	/**
 	 * print the class in console
@@ -53,7 +53,7 @@ class Oas {
 	/**
 	 * turn oas object to craft object
 	 */
-	toCraft():Craft {
+	toCraft(): Craft {
 		let craft = new Craft();
 		return craft;
 	}
