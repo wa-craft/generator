@@ -5,20 +5,6 @@
     "commandline": "",
     "data": "./example/test.yaml",
     "target": "./output",
-    "operation": {
-        "auth": "",
-        "container": "",
-        "databases": {
-            "relation": "mariadb",
-            "timesieries": "tdengine",
-            "kv": "redis",
-            "graph": ""
-        },
-        "dns": "",
-        "http": "nginx",
-        "mesh": "",
-        "mq": "",
-        "storage": ""
-    },
+    "operation": "database/mariadb",
     "schema": "rdb/mariadb,kv/redis"
 }

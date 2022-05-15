@@ -1,13 +1,14 @@
-import { IGenerator } from '../../../../../src/IGenerator.ts';
-class View implements IGenerator {
+import { IExecutor } from '../../../../../src/IExecutor.ts';
+class View implements IExecutor {
 	data: any = {};
 
 	constructor(data: any) {
 		this.data = data;
 	}
 
-	generate(): void {
-		console.log(this.data)
+	execute(): void {
+		//console.log(this.data)
+		this.dump();
 	}
 
 	dump(): void {

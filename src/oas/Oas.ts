@@ -1,12 +1,8 @@
-import {
-	copy,
-	emptyDirSync,
-	ensureFileSync,
-} from 'https://deno.land/std@0.139.0/fs/mod.ts';
+import { copy, emptyDirSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
 
 import { Info, Path, Server, Tag } from './path/mod.ts';
 import { IGenerator } from '../IGenerator.ts';
-import { fileExists } from '../util/file.ts';
+import { dirExists, fileExists } from '../util/file.ts';
 
 /** */
 class Oas implements IGenerator {
@@ -76,51 +72,57 @@ class Oas implements IGenerator {
 		const source = 'plugin';
 		const target = this.config.target ?? './output';
 		emptyDirSync(target);
-		console.info(`[generate:dir]: ${target}`);
-
-		//create frontend template & copy resource files
-		if (this.config.frontend !== undefined && this.config.frontend !== '') {
-			emptyDirSync(`${target}/frontend`);
-			copy(
-				`${source}/frontend/${this.config.frontend}/resource`,
-				`${target}/frontend`,
-				{ overwrite: true },
-			);
-			console.info(`[generate:copy]: ${target}/${this.config.frontend}`);
-		}
-
-		//create backend template & copy resource files
-		if (this.config.backend !== undefined && this.config.backend !== '') {
-			emptyDirSync(`${target}/backend`);
-			copy(
-				`${source}/backend/${this.config.backend}/resource`,
-				`${target}/backend`,
-				{ overwrite: true },
-			);
-			console.info(`[generate:copy]: ${target}/${this.config.backend}`);
-		}
+		console.info(`[generate:mkdir]: ${target}`);
 
 		//import plugin handlers and generate codes
-		['frontend', 'backend', 'commandline'].forEach(async (element) => {
-			let fw = this.config[element] ?? '';
-			let pluginPath;
+		['frontend', 'backend', 'commandline', 'operation', 'schema'].forEach(
+			async (item: string) => {
+				let configValue = this.config[item] ?? '';
+				let paths = configValue.split(',');
+				paths.forEach(async (path: string) => {
+					if (path === '') return;
 
-			pluginPath = `./${source}/${element}/${fw}/handler/mod.ts`;
-			if (fw !== '' && fw !== undefined) {
-				console.log(pluginPath);
-				if (await fileExists(pluginPath)) {
-					import('../../' + pluginPath).then((Plugin) => {
-						//iterate all of the plugin handlers and run generate functions
-						for (const id of Object.keys(Plugin)) {
-							let handler = new Plugin[id](this.data);
-							handler?.generate();
+					let pluginPath = `${source}/${item}/${path}`;
+					let handlerFile = `./${pluginPath}/handler/mod.ts`;
+					let targetPath = `${target}/${item}`;
+					let resourcePath = `${pluginPath}/resource`;
+
+					if (path !== '' && path !== undefined) {
+						//copy resource files
+						emptyDirSync(targetPath);
+						if (await dirExists(resourcePath)) {
+							copy(
+								resourcePath,
+								targetPath,
+								{ overwrite: true },
+							);
+							console.info(
+								`[generate:copy]: from {${resourcePath}} to {${targetPath}}`,
+							);
+						} else {
+							console.warn(
+								`[WARNING]: ${resourcePath} is not exists!`,
+							);
 						}
-					});
-				} else {
-					console.error(`Plugin path [${pluginPath}] is not exists!`);
-				}
-			}
-		});
+
+						//run handlers
+						if (await fileExists(handlerFile)) {
+							import('../../' + handlerFile).then((Plugin) => {
+								//iterate all of the plugin handlers and run generate functions
+								for (const id of Object.keys(Plugin)) {
+									let handler = new Plugin[id](this.data);
+									handler?.execute();
+								}
+							});
+						} else {
+							console.warn(
+								`[WARNING]: ${handlerFile} is not exists!`,
+							);
+						}
+					}
+				});
+			},
+		);
 	}
 }
 
