@@ -101,14 +101,9 @@ class Oas implements IGenerator {
 		}
 
 		//import plugin handlers and generate codes
-		['frontend', 'backend', 'command-line'].forEach(async (element) => {
-			let fw;
+		['frontend', 'backend', 'commandline'].forEach(async (element) => {
+			let fw = this.config[element] ?? '';
 			let pluginPath;
-			for (const key of Object.keys(this.config)) {
-				if (key === element) {
-					fw = this.config[key] ?? '';
-				}
-			}
 
 			pluginPath = `./${source}/${element}/${fw}/handler/mod.ts`;
 			if (fw !== '' && fw !== undefined) {
