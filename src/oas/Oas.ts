@@ -86,6 +86,7 @@ class Oas implements IGenerator {
 					let handlerFile = `./${pluginPath}/handler/mod.ts`;
 					let targetPath = `${target}/${item}`;
 					let resourcePath = `${pluginPath}/resource`;
+					const handlerIds: Array<string> = ['Controller', 'Event', 'Helper', 'Middleware', 'Model', 'Router', 'Traits', 'Validator', 'View'];
 
 					if (path !== '' && path !== undefined) {
 						//copy resource files
@@ -109,9 +110,11 @@ class Oas implements IGenerator {
 						if (await fileExists(handlerFile)) {
 							import('../../' + handlerFile).then((Plugin) => {
 								//iterate all of the plugin handlers and run generate functions
-								for (const id of Object.keys(Plugin)) {
-									let handler = new Plugin[id](this.data);
-									handler?.execute();
+								for (const handlerId of Object.keys(Plugin)) {
+									if (handlerIds.indexOf(handlerId) >= 0) {
+										let handler = new Plugin[handlerId](this.data);
+										handler?.execute();
+									}
 								}
 							});
 						} else {
