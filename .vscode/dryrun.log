@@ -1,7 +1,0 @@
-make --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/bison/workspace/wa-craft/generator'
-deno vendor --force wag.ts
-clear
-deno run -A --import-map vendor/import_map.json wag.ts 
-make: Leaving directory '/home/bison/workspace/wa-craft/generator'
- 
