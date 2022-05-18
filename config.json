@@ -1,10 +1,9 @@
 {
-    "command-line": "",
     "frontend": "typescript/react17-antd-umi",
     "backend": "php/thinkphp6-fpm",
     "commandline": "",
     "data": "./example/test.yaml",
     "target": "./output",
-    "operation": "database/mariadb",
+    "operation": "database/mariadb,http/nginx",
     "schema": "rdb/mariadb,kv/redis"
 }

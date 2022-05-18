@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 // deno-lint-ignore-file no-explicit-any
 import { Oas } from '../oas/Oas.ts';
 /**
@@ -5,7 +6,7 @@ import { Oas } from '../oas/Oas.ts';
  * @param data
  */
 function parse(data: any, config: any) {
-	let oas = new Oas(data, config);
+	let oas:Oas = new Oas(data, config);
 	oas.generate();
 	//oas.dump();
 }

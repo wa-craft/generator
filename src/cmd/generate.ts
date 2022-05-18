@@ -16,12 +16,18 @@ const generateCommandModule = {
 		}).option('target', {
 			alias: 't',
 			describe: 'target path',
-		}).option('frontend <frontend-framework|none>', {
+		}).option('frontend', {
 			alias: 'f',
-			describe: 'frontend framework',
-		}).option('backend <backend-framework|none>', {
+			describe: 'frontend framework <frontend-framework|none>',
+		}).option('backend', {
 			alias: 'b',
-			describe: 'backend framework',
+			describe: 'backend framework <backend-framework|none>',
+		}).option('commandline', {
+			describe: 'commandline framework <commandline-framework|none>',
+		}).option('operation', {
+			describe: 'operation files',
+		}).option('schema', {
+			describe: 'database files',
 		}).example([
 			['wc generate -c config.json', 'using a config file'],
 			[
@@ -36,6 +42,9 @@ const generateCommandModule = {
 			target: '',
 			frontend: '',
 			backend: '',
+			operation: '',
+			commandline: '',
+			schema: '',
 		};
 
 		//set config params
@@ -52,6 +61,9 @@ const generateCommandModule = {
 				config.target = argv.target ?? './output';
 				config.frontend = argv.frontend ?? 'react-antd-umi';
 				config.backend = argv.backend ?? 'deno-oak';
+				config.commandline = argv.commandline ?? '';
+				config.operation = argv.operation ?? 'http/nginx';
+				config.schema = argv.schema ?? 'rdb/mariadb';
 			} else {
 				console.log('Please input a config file name');
 				return;
@@ -67,7 +79,6 @@ const generateCommandModule = {
 			console.error('Load data failed!');
 			return;
 		}
-
 		parser.parse(data, config);
 	},
 };

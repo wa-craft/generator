@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { copy, emptyDirSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
 
 import { Info, Path, Server, Tag } from './path/mod.ts';
@@ -76,17 +77,30 @@ class Oas implements IGenerator {
 
 		//import plugin handlers and generate codes
 		['frontend', 'backend', 'commandline', 'operation', 'schema'].forEach(
-			async (item: string) => {
-				let configValue = this.config[item] ?? '';
+			async (configKey: string) => {
+				let configValue = this.config[configKey] ?? '';
 				let paths = configValue.split(',');
 				paths.forEach(async (path: string) => {
 					if (path === '') return;
 
-					let pluginPath = `${source}/${item}/${path}`;
+					let pluginPath = `${source}/${configKey}/${path}`;
 					let handlerFile = `./${pluginPath}/handler/mod.ts`;
-					let targetPath = `${target}/${item}`;
 					let resourcePath = `${pluginPath}/resource`;
 					const handlerIds: Array<string> = ['Controller', 'Event', 'Helper', 'Middleware', 'Model', 'Router', 'Traits', 'Validator', 'View'];
+
+					/*
+					 set target path.
+					 if configKey equals 'operation' or 'schema', 
+					 use the last path as the output target path.
+					*/
+					let targetPath;
+					if(configKey === 'operation' || configKey === 'schema') {
+						//seperated child path
+						const spath = path.split('/');
+						targetPath = `${target}/${configKey}/${spath[1]}`;
+					} else {
+						targetPath = `${target}/${configKey}`;
+					}
 
 					if (path !== '' && path !== undefined) {
 						//copy resource files
