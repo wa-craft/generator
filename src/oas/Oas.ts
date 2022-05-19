@@ -68,6 +68,9 @@ class Oas implements IGenerator {
 		console.info(this);
 	}
 
+	/**
+	 * generate model codes
+	 */
 	async models(): Promise<void> {
 		const schemas = this.data.components.schemas
 		let targetPath = `${this.config.target}/backend/app/model`;

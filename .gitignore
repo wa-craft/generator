@@ -1,6 +1,6 @@
 vendor/
 output/
-example/test.yaml
+example/test*
 .vscode/**
 
 craft.bundle.ts
