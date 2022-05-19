@@ -1,9 +1,12 @@
 // deno-lint-ignore-file
-import { copy, emptyDirSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
+import { copy, emptyDirSync, ensureFileSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
+import { renderFile } from "https://deno.land/x/mustache@v0.3.0/mod.ts";
 
 import { Info, Path, Server, Tag } from './path/mod.ts';
 import { IGenerator } from '../IGenerator.ts';
 import { dirExists, fileExists } from '../util/file.ts';
+import * as Craft from '../craft/mod.ts';
+import { normalize } from "https://deno.land/std@0.139.0/path/mod.ts";
 
 /** */
 class Oas implements IGenerator {
@@ -63,6 +66,28 @@ class Oas implements IGenerator {
 	 */
 	dump(): void {
 		console.info(this);
+	}
+
+	async models(): Promise<void> {
+		const schemas = this.data.components.schemas
+		let targetPath = `${this.config.target}/backend/app/model`;
+			
+		let model;
+		for (const schemaKey of Object.keys(schemas)) {
+			let filePath = `${targetPath}/${schemaKey}.php`;
+			let pluginPath = `plugin/backend/${this.config.backend}`;
+			let templatePath = `./${pluginPath}/template`;
+			let resourcePath = `./${pluginPath}/resource`;
+			model = new Craft.Model(schemas[schemaKey]?? {});
+			model.name = schemaKey;
+
+			let text = await renderFile(`${templatePath}/model.html`, model.getJson());
+console.log(text);
+			//ensureFileSync(filePath);
+			//Deno.writeFileSync(filePath, text);
+
+			//model?.generate();
+		}
 	}
 
 	/**
@@ -138,6 +163,7 @@ class Oas implements IGenerator {
 						}
 					}
 				});
+				this.models();
 			},
 		);
 	}
