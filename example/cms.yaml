@@ -1,0 +1,26 @@
+#项目名称，全部小写即可
+name: "dgfao"
+#公司名称
+company: "东莞培基"
+#供应商信息
+vendor: "东莞培基"
+#版权信息
+copyright: "&copy;2022"
+#数据定义版本
+revision: "1"
+#项目的命名空间，小写
+namespace: "app"
+#生成文件的输出目录
+target: "./output"
+#前端使用框架的路径，相对于 ./plugin 目录
+frontend: "typescript/react17-antd-umi"
+#后端使用框架的路径，相对于 ./plugin 目录
+backend: "php/thinkphp6-fpm"
+#命令行使用框架的路径，相对于 ./plugin 目录
+commandline: ""
+#数据文件的路径，用逗号','分隔开多个文件
+data: "./example/test_api.yaml"
+#运维环境软件配置插件的目录，相对于 .plugin 目录
+operation: "database/mariadb,http/nginx"
+#数据库存储软件配置插件的目录，相对于 .plugin 目录
+schema: "rdb/mariadb,kv/redis"
