@@ -1,12 +1,9 @@
 // deno-lint-ignore-file
 import { copy, emptyDirSync, ensureFileSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
-import { renderFile } from "https://deno.land/x/mustache@v0.3.0/mod.ts";
 
 import { Info, Path, Server, Tag } from './path/mod.ts';
 import { IGenerator } from '../IGenerator.ts';
 import { dirExists, fileExists } from '../util/file.ts';
-import * as Craft from '../craft/mod.ts';
-import { normalize } from "https://deno.land/std@0.139.0/path/mod.ts";
 
 /** */
 class Oas implements IGenerator {
@@ -68,31 +65,7 @@ class Oas implements IGenerator {
 		console.info(this);
 	}
 
-	/**
-	 * generate model codes
-	 */
-	async models(): Promise<void> {
-		const schemas = this.data.components.schemas
-		let targetPath = `${this.config.target}/backend/app/model`;
-			
-		let model;
-		for (const schemaKey of Object.keys(schemas)) {
-			let filePath = `${targetPath}/${schemaKey}.php`;
-			let pluginPath = `plugin/backend/${this.config.backend}`;
-			let templatePath = `./${pluginPath}/template`;
-			let resourcePath = `./${pluginPath}/resource`;
-			model = new Craft.Model(schemas[schemaKey]?? {});
-			model.name = schemaKey;
-			model.namespace = 'app\\model';
-
-			let text = await renderFile(`${templatePath}/model.html`, model.getJson());
-
-			const encoder = new TextEncoder();
-			ensureFileSync(filePath);
-			console.info(`[generate:write]: ${filePath}`);
-			Deno.writeFileSync(filePath, encoder.encode(text));
-		}
-	}
+	
 
 	/**
 	 * turn oas object to craft object
@@ -115,7 +88,7 @@ class Oas implements IGenerator {
 					let pluginPath = `${source}/${configKey}/${path}`;
 					let handlerFile = `./${pluginPath}/handler/mod.ts`;
 					let resourcePath = `${pluginPath}/resource`;
-					const handlerIds: Array<string> = ['Controller', 'Event', 'Helper', 'Middleware', 'Model', 'Router', 'Traits', 'Validator', 'View'];
+					const handlerIds: Array<string> = ['Generator'];
 
 					/*
 					 set target path.
@@ -169,7 +142,6 @@ class Oas implements IGenerator {
 				});
 			},
 		);
-		this.models();
 	}
 }
 
