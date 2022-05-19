@@ -1,8 +1,8 @@
-import { IGenerator } from './IGenerator.ts';
+import { IModel } from './IModel.ts';
 
 /** */
-class Traits implements IGenerator {
-	generate(): void {
+class Traits implements IModel {
+	getJson(): void {
 	}
 }
 

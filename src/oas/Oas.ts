@@ -80,13 +80,14 @@ class Oas implements IGenerator {
 			let resourcePath = `./${pluginPath}/resource`;
 			model = new Craft.Model(schemas[schemaKey]?? {});
 			model.name = schemaKey;
+			model.namespace = 'app\\model';
 
 			let text = await renderFile(`${templatePath}/model.html`, model.getJson());
-console.log(text);
-			//ensureFileSync(filePath);
-			//Deno.writeFileSync(filePath, text);
 
-			//model?.generate();
+			const encoder = new TextEncoder();
+			ensureFileSync(filePath);
+			console.info(`[generate:write]: ${filePath}`);
+			Deno.writeFileSync(filePath, encoder.encode(text));
 		}
 	}
 
@@ -163,9 +164,9 @@ console.log(text);
 						}
 					}
 				});
-				this.models();
 			},
 		);
+		this.models();
 	}
 }
 

@@ -1,8 +1,8 @@
-import { IGenerator } from './IGenerator.ts';
+import { IModel } from './IModel.ts';
 
 /** */
-class View implements IGenerator {
-	generate(): void {
+class View implements IModel {
+	getJson(): void {
 	}
 }
 

@@ -1,12 +1,12 @@
 // deno-lint-ignore-file
 import { renderFile } from "https://deno.land/x/mustache@v0.3.0/mod.ts";
 
-import { IGenerator } from './IGenerator.ts';
+import { IModel } from './IModel.ts';
 import { ClassProperty } from './ClassProperty.ts';
 import { normalize } from "https://deno.land/std@0.139.0/path/mod.ts";
 
 /** */
-class Model implements IGenerator {
+class Model implements IModel {
 	properties:any = [];
 	config:any = {};
 	namespace:string = '';
@@ -20,29 +20,24 @@ class Model implements IGenerator {
 			for (const properId of Object.keys(data.properties)) {
 				if(data.properties[properId] !== undefined) {
 					let p = data.properties[properId];
-					const property = new ClassProperty({
+					//process type
+					let type;
+					type = p.type ?? 'string';
+					type = (type === 'integer')?'int':type;
+					const property = {
 						access: 'private',
-						name: properId,
-						type: p.type?? 'string',
+						name: `$${properId}`,
+						type: type,
 						format: p.format ?? 'vachart(50)',
 						description: p.description ?? properId,
 						default: p.default ?? '',
 						example: p.example ?? '',
 						enum: p.enum ?? []
-					});
+					};
 					this.properties.push(property);
 				}
 			}
 		}
-	}
-	
-	generate(): void {
-		this.properties.forEach((property:ClassProperty) => {
-			let targetFile = `${this.config.targetPath}/${property.name}.php`;
-			//ensureFileSync(targetFile);
-			//read template
-			let text = renderFile(normalize(targetFile), property);
-		});
 	}
 
 	getJson():any{

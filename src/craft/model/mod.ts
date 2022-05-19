@@ -2,7 +2,7 @@ export * from './Application.ts';
 export * from './Controller.ts';
 export * from './Event.ts';
 export * from './Helper.ts';
-export * from './IGenerator.ts';
+export * from './IModel.ts';
 export * from './Middleware.ts';
 export * from './Model.ts';
 export * from './Module.ts';

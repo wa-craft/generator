@@ -4,22 +4,18 @@ declare (strict_types = 1);
 namespace {{namespace}};
 
 {{uses}}
-
-{{#is_abstact}}abstract {{/is_abstact}}class {{class_name}}{{implenments}} {
+{{#is_abstact}}abstract {{/is_abstact}}class {{className}}{{implenments}} {
     {{#traits}}
     import {{trait}};
+
     {{/traits}}
-
     {{#properties}}
-    {{access}} {{type}} {{property}}{{#init}}= {{value}}{{/init}};
+    {{access}} {{type}} {{name}}{{#init}}= {{value}}{{/init}};
     {{/properties}}
-
     {{#constructors}}
     {{access}} function {{name}}{{#is_typed}}: {{type}}{{/is_typed}} {
-
     }
     {{/constructors}}
-
     {{#methods}}
     {{/methods}}
 }
