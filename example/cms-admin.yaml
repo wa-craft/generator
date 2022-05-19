@@ -1,18 +1,18 @@
 openapi: "3.0.3"
 info:
-  version: v2022.0517
+  version: v2022.0519
   title: Admin
   description: |
-    东莞外事办官方网站v2022年版后台
+    培基CMS系统v2022年版后台
   license:
     name: Private License
-    url: dgfao.dg.gov.cn
+    url: bitcms.enet51.com
 servers:
-  - url: http://dgfao.dg.gov.cn/api
+  - url: http://bitcms.enet51.com/admin
     description: 官方地址
-  - url: http://dgfao.vm/api
+  - url: http://bitcms.vm/admin
     description: 内网开发地址
-  - url: http://dgfao.enet51.com/api
+  - url: http://bitcms.enet51.com/admin
     description: 外网测试地址
 tags:
 - name: "node"
