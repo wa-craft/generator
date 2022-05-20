@@ -36,10 +36,11 @@ class Generator extends AbstractGenerator {
 		let targetPath = `${this.data.config.target}/backend/app/controller`;
 
 		let routers: any[] = [];
+		let preRoutes: any[] = [];
 		let controller;
 
 		/**
-		 * process path
+		 * process path step 1: turn path objects to array
 		 * length - 1: method
 		 * length - 2: class
 		 * length - (2+): paths
@@ -47,58 +48,49 @@ class Generator extends AbstractGenerator {
 		for (const pathKey of Object.keys(paths)) {
 			let pathArray = pathKey.split('/');
 			let name = pathArray[pathArray.length - 2] ?? '';
-			let route = {
+			preRoutes.push({
 				method: pathArray[pathArray.length - 1] ?? '',
 				className: name.charAt(0).toUpperCase() + name.slice(1),
 				path: pathArray.splice(0, pathArray.length - 2).join('/')
-			};
+			});
+		}
 
-			if(routers.length === 0) {
-				routers.push({
-					className: route.className,
-					path: route.path,
-					methods: [route.method]
-				});
-			} else {
-				let index;
-				for(let i in routers) {
-					if(routers[i] === undefined) break;
+		/**
+		 * combine routes with same name and path
+		 */
+		let tmpRoutes = preRoutes;
+		for(const i in preRoutes) {
+			let newRoute = { 
+				className: preRoutes[i].className ?? '',
+				path: preRoutes[i].path?? '',
+				methods: preRoutes[i].methods ?? []
+			}
 
-					if(routers[i].className === route.className && routers[i].path === route.path) {
-						if(routers[i].methods === undefined) {
-							routers[i].methods = [];
-						}
-
-						if(routers[i] !== undefined) {
-							routers[i].methods.push(route.method);
-						} else {
-							routers.push({
-								className: route.className,
-								path: route.path,
-								methods: [route.method]
-							});
-						}
-					}
+			//use delete to set an element of array to undefined, and remove it from loop
+			for(const j in tmpRoutes) {
+				if(tmpRoutes[j] !== undefined && newRoute.className === tmpRoutes[j].className && newRoute.path === tmpRoutes[j].path) {
+					newRoute.methods.push({ name: tmpRoutes[j].method });
+					delete tmpRoutes[j];
 				}
 			}
+			routers.push(newRoute);
 		}
-		console.log(routers);
+
 		routers.forEach(route => {
 			let filePath = (route.path !== '') 
-				? `${targetPath}/${route.path}/${route.className}.php`
+				? `${targetPath}/${route.path.slice(1)}/${route.className}.php`
 				: `${targetPath}/${route.className}.php`;
 
 			const namespace = (route.path === '') 
 				? 'app\\controller' 
-				: `app\\controller\\${route.path}`;
+				: `app\\controller\\${route.path.slice(1).replace('/','\\')}`;
 
 			let controller = {
-				name: route.className,
+				className: route.className,
 				namespace: namespace,
 				methods: route.methods
 			};
-//console.log(filePath);
-			//this.writeFromTemplateFile(`${this.templatePath}/controller.html`, filePath, controller);
+			this.writeFromTemplateFile(`${this.templatePath}/controller.html`, filePath, controller);
 		});
 	}
 
