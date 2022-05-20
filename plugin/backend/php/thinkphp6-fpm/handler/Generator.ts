@@ -1,6 +1,6 @@
 
 import AbstractGenerator from '../../../../../src/AbstractGenerator.ts';
-import * as Craft from '../../../../../src/craft/mod.ts';
+import * as Model from './model/mod.ts';
 
 class Generator extends AbstractGenerator {
 	data: any = {};
@@ -104,13 +104,11 @@ class Generator extends AbstractGenerator {
 		let model;
 		for (const schemaKey of Object.keys(schemas)) {
 			let filePath = `${targetPath}/${schemaKey}.php`;
-			let pluginPath = `plugin/backend/${this.data.config.backend}`;
-			let templatePath = `./${pluginPath}/template`;
-			model = new Craft.Model(schemas[schemaKey] ?? {});
+			model = new Model.Model(schemas[schemaKey] ?? {});
 			model.name = schemaKey;
 			model.namespace = 'app\\model';
 
-			this.writeFromTemplateFile(`${this.templatePath}/model.html`, filePath, model);
+			this.writeFromTemplateFile(`${this.templatePath}/model.html`, filePath, model.getJson());
 		}
 	}
 
