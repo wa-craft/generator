@@ -77,6 +77,7 @@ class Openapi {
 		const target = this.config.target ?? './output';
 		emptyDirSync(target);
 		console.info(`[generate:mkdir]: ${target}`);
+		const handlerFilters: Array<string> = ['Before', 'After'];
 
 		//import plugin handlers and generate codes
 		['frontend', 'backend', 'commandline', 'operation', 'schema'].forEach(
@@ -89,7 +90,6 @@ class Openapi {
 					let pluginPath = `${source}/${configKey}/${path}`;
 					let handlerFile = `./${pluginPath}/handler/mod.ts`;
 					let resourcePath = `${pluginPath}/resource`;
-					const handlerIds: Array<string> = ['Generator'];
 
 					/*
 					 set target path.
@@ -128,7 +128,9 @@ class Openapi {
 							import('../../' + handlerFile).then((Plugin) => {
 								//iterate all of the plugin handlers and run generate functions
 								for (const handlerId of Object.keys(Plugin)) {
-									if (handlerIds.indexOf(handlerId) >= 0) {
+									if (
+										handlerFilters.indexOf(handlerId) >= 0
+									) {
 										let handler = new Plugin[handlerId](
 											this.data,
 										);
