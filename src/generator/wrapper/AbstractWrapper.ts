@@ -6,4 +6,6 @@ export default abstract class AbstractWrapper {
 		this.name = data.name ?? '';
 		this.title = data.title ?? '';
 	}
+
+	abstract process(): void;
 }

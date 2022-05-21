@@ -2,6 +2,10 @@ import AbstractWrapper from './AbstractWrapper.ts';
 
 /** */
 export default class Project extends AbstractWrapper {
-	getJson(): void {
+	process(): void {
+		throw new Error('Method not implemented.');
+	}
+	setNamespace(): void {
+		throw new Error('Method not implemented.');
 	}
 }

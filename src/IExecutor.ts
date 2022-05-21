@@ -1,5 +1,3 @@
-interface IExecutor {
+export type IExecutor = {
 	execute(): void;
-}
-
-export type { IExecutor };
+};

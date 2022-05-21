@@ -1,18 +1,12 @@
 // deno-lint-ignore-file
-import { renderFile } from 'https://deno.land/x/mustache@v0.3.0/mod.ts';
-
 import AbstractClass from './AbstractClass.ts';
 import ClassProperty from './ClassProperty.ts';
 
 /** */
 export default class Model extends AbstractClass {
-	properties: any = [];
+	properties!: Array<ClassProperty>;
 	config: any = {};
-	namespace: string = '';
 	uses: Array<string> = [];
-	is_abstract: boolean = false;
-	name: string = '';
-	implenments: Array<string> = [];
 
 	constructor(data: any) {
 		super(data);
@@ -34,16 +28,24 @@ export default class Model extends AbstractClass {
 						example: p.example ?? '',
 						enum: p.enum ?? [],
 					};
-					this.properties.push(property);
+					this.properties.push(new ClassProperty(property));
 				}
 			}
 		}
 	}
 
+	setNamespace(): void {
+		throw new Error('Method not implemented.');
+	}
+
+	process(): void {
+		throw new Error('Method not implemented.');
+	}
+
 	getJson(): any {
 		return {
 			namespace: this.namespace,
-			is_abstract: false,
+			isAbstract: false,
 			className: this.name,
 			implenments: this.implenments,
 			properties: this.properties,
