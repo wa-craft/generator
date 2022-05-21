@@ -1,7 +1,7 @@
 // deno-lint-ignore-file
 import { renderFile } from 'https://deno.land/x/mustache@v0.3.0/mod.ts';
 
-import { AbstractWrapper } from './AbstractWrapper.ts';
+import AbstractWrapper from './AbstractWrapper.ts';
 import { ClassProperty } from './ClassProperty.ts';
 import { normalize } from 'https://deno.land/std@0.139.0/path/mod.ts';
 

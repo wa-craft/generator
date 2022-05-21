@@ -1,4 +1,4 @@
-import { AbstractWrapper } from './AbstractWrapper.ts';
+import AbstractWrapper from './AbstractWrapper.ts';
 
 /** */
 class Project implements AbstractWrapper {
