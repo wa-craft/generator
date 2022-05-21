@@ -83,7 +83,17 @@ class Openapi {
 		['frontend', 'backend', 'commandline', 'operation', 'schema'].forEach(
 			async (configKey: string) => {
 				let configValue = this.config[configKey] ?? '';
-				let paths = configValue.split(',');
+				let paths: Array<string> = [];
+
+				if (Array.isArray(configValue)) {
+					//process schema array
+					for (const item of configValue) {
+						paths.push(item.type);
+					}
+				} else {
+					paths = configValue.split(',');
+				}
+
 				paths.forEach(async (path: string) => {
 					if (path === '') return;
 
