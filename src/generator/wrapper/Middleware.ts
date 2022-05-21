@@ -1,9 +1,7 @@
-import AbstractWrapper from './AbstractWrapper.ts';
+import AbstractClass from './AbstractClass.ts';
 
 /** */
-class Middleware extends AbstractWrapper {
+export default class Middleware extends AbstractClass {
 	getJson(): void {
 	}
 }
-
-export { Middleware };

@@ -1,12 +1,11 @@
 // deno-lint-ignore-file
 import { renderFile } from 'https://deno.land/x/mustache@v0.3.0/mod.ts';
 
-import AbstractWrapper from './AbstractWrapper.ts';
-import { ClassProperty } from './ClassProperty.ts';
-import { normalize } from 'https://deno.land/std@0.139.0/path/mod.ts';
+import AbstractClass from './AbstractClass.ts';
+import ClassProperty from './ClassProperty.ts';
 
 /** */
-class Model extends AbstractWrapper {
+export default class Model extends AbstractClass {
 	properties: any = [];
 	config: any = {};
 	namespace: string = '';
@@ -16,6 +15,7 @@ class Model extends AbstractWrapper {
 	implenments: Array<string> = [];
 
 	constructor(data: any) {
+		super(data);
 		if (data.properties !== undefined) {
 			for (const properId of Object.keys(data.properties)) {
 				if (data.properties[properId] !== undefined) {
@@ -50,5 +50,3 @@ class Model extends AbstractWrapper {
 		};
 	}
 }
-
-export { Model };

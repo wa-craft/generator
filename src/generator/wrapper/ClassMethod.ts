@@ -1,7 +1,7 @@
 // deno-lint-ignore-file
 import AbstractWrapper from './AbstractWrapper.ts';
 /** */
-export default class ClassProperty extends AbstractWrapper {
+export default class ClassMethod extends AbstractWrapper {
 	access: string = 'private';
 	name: string = '';
 	type: string = 'string';

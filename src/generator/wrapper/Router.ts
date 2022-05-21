@@ -1,9 +1,7 @@
-import AbstractWrapper from './AbstractWrapper.ts';
+import AbstractClass from './AbstractClass.ts';
 
 /** */
-class Router extends AbstractWrapper {
+export default class Router extends AbstractClass {
 	getJson(): void {
 	}
 }
-
-export { Router };

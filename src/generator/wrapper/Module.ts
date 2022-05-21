@@ -1,9 +1,7 @@
-import AbstractWrapper from './AbstractWrapper.ts';
+import AbstractClass from './AbstractClass.ts';
 
 /** */
-class Module extends AbstractWrapper {
+export default class Module extends AbstractClass {
 	getJson(): void {
 	}
 }
-
-export { Module };

@@ -1,9 +1,7 @@
-import AbstractWrapper from './AbstractWrapper.ts';
+import AbstractClass from './AbstractClass.ts';
 
 /** */
-class Validator extends AbstractWrapper {
+export default class Validator extends AbstractClass {
 	getJson(): void {
 	}
 }
-
-export { Validator };
