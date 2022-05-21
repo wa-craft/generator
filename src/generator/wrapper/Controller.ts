@@ -1,7 +1,7 @@
 import AbstractWrapper from './AbstractWrapper.ts';
 
 /** */
-class Controller implements AbstractWrapper {
+class Controller extends AbstractWrapper {
 	getJson(): void {
 	}
 }

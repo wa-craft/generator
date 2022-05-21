@@ -1,7 +1,7 @@
 import AbstractWrapper from './AbstractWrapper.ts';
 
 /** */
-class Event implements AbstractWrapper {
+class Event extends AbstractWrapper {
 	getJson(): void {
 	}
 }

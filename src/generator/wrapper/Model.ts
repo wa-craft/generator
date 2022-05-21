@@ -6,7 +6,7 @@ import { ClassProperty } from './ClassProperty.ts';
 import { normalize } from 'https://deno.land/std@0.139.0/path/mod.ts';
 
 /** */
-class Model implements AbstractWrapper {
+class Model extends AbstractWrapper {
 	properties: any = [];
 	config: any = {};
 	namespace: string = '';
