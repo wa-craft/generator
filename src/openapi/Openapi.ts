@@ -6,11 +6,10 @@ import {
 } from 'https://deno.land/std@0.139.0/fs/mod.ts';
 
 import { Info, Path, Server, Tag } from './path/mod.ts';
-import { IGenerator } from '../IGenerator.ts';
 import { dirExists, fileExists } from '../util/file.ts';
 
 /** */
-class Openapi implements IGenerator {
+class Openapi {
 	openapi: string = '';
 	info!: Info;
 	servers: Server[] = [];
