@@ -1,5 +1,9 @@
 // deno-lint-ignore-file
-import { copy, emptyDirSync, ensureFileSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
+import {
+	copy,
+	emptyDirSync,
+	ensureFileSync,
+} from 'https://deno.land/std@0.139.0/fs/mod.ts';
 
 import { Info, Path, Server, Tag } from './path/mod.ts';
 import { IGenerator } from '../IGenerator.ts';
@@ -65,8 +69,6 @@ class Oas implements IGenerator {
 		console.info(this);
 	}
 
-	
-
 	/**
 	 * turn oas object to craft object
 	 */
@@ -92,11 +94,11 @@ class Oas implements IGenerator {
 
 					/*
 					 set target path.
-					 if configKey equals 'operation' or 'schema', 
+					 if configKey equals 'operation' or 'schema',
 					 use the last path as the output target path.
 					*/
 					let targetPath;
-					if(configKey === 'operation' || configKey === 'schema') {
+					if (configKey === 'operation' || configKey === 'schema') {
 						//seperated child path
 						const spath = path.split('/');
 						targetPath = `${target}/${configKey}/${spath[1]}`;
@@ -128,7 +130,9 @@ class Oas implements IGenerator {
 								//iterate all of the plugin handlers and run generate functions
 								for (const handlerId of Object.keys(Plugin)) {
 									if (handlerIds.indexOf(handlerId) >= 0) {
-										let handler = new Plugin[handlerId](this.data);
+										let handler = new Plugin[handlerId](
+											this.data,
+										);
 										handler?.execute();
 									}
 								}

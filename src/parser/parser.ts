@@ -6,7 +6,7 @@ import { Oas } from '../oas/Oas.ts';
  * @param data
  */
 function parse(data: any, config: any) {
-	let oas:Oas = new Oas(data, config);
+	let oas: Oas = new Oas(data, config);
 	oas.generate();
 	//oas.dump();
 }
