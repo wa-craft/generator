@@ -8,6 +8,8 @@ vendor: "东莞培基"
 copyright: "&copy;2022"
 #数据定义版本
 revision: "1"
+#生成的模式
+type: "backend"
 #项目的命名空间，小写
 namespace: "app"
 #生成文件的输出目录
