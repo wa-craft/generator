@@ -4,3 +4,4 @@ example/test*
 .vscode/**
 
 craft.bundle.ts
+craft
