@@ -1,0 +1,27 @@
+<?php
+declare (strict_types = 1);
+
+namespace {{namespace}};
+
+use think\Validator;
+
+{{uses}}
+class {{className}} extends Validator {
+    protected $rule = [
+	{{#rules}}
+		'{{name}}' => '{{rule}}',
+	{{/rules}}
+	];
+
+	protected $message = [
+	{{#messages}}
+		'{{name}}' => '{{message}}',
+	{{/messages}}
+	];
+	{{#methods}}
+	
+	public function {{name}}() {
+
+    }
+	{{/methods}}
+}

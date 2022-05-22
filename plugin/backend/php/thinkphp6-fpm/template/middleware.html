@@ -1,0 +1,13 @@
+<?php
+declare (strict_types = 1);
+
+namespace {{namespace}};
+
+{{uses}}
+class {{className}} {
+	public function handle($request, \Closure $next)\
+	{
+		throws('No handler code here');
+		return $next($request);
+	}
+}

@@ -3,8 +3,10 @@ declare (strict_types = 1);
 
 namespace {{namespace}};
 
+use think\Model;
+
 {{uses}}
-{{#is_abstact}}abstract {{/is_abstact}}class {{className}}{{implenments}} {
+class {{className}} extends Model {{implenments}} {
     {{#traits}}
     import {{trait}};
 

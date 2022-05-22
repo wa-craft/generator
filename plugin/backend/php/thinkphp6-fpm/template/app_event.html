@@ -1,0 +1,40 @@
+<?php
+// 事件定义文件
+return [
+    'bind'      => [
+    ],
+
+    'listen'    => [
+        'AppInit'  => [
+		{{#appInitEvents}}
+			'{{fullClassName}}',
+		{{/appInitEvents}}
+		],
+        'HttpRun'  => [
+		{{#httpRunEvents}}
+			'{{fullClassName}}',
+		{{/httpRunEvents}}
+		],
+        'HttpEnd'  => [
+		{{#httpEndEvents}}
+			'{{fullClassName}}',
+		{{/httpEndEvents}}
+		],
+        'LogLevel' => [
+		{{#logLevelEvents}}
+			'{{fullClassName}}',
+		{{/logLevelEvents}}
+		],
+        'LogWrite' => [
+		{{#logWriteEvents}}
+			'{{fullClassName}}',
+		{{/logWriteEvents}}
+		],
+    ],
+
+    'subscribe' => [
+	{{#subscribeEvents}}
+		'{{fullClassName}}',
+	{{/subscribeEvents}}
+    ],
+];

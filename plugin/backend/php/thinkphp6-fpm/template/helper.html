@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace {{namespace}};
 
 {{uses}}
-{{#is_abstact}}abstract {{/is_abstact}}class {{className}}{{implenments}} {
+class {{className}}{{#extends}} extends {{/extends}}{{implenments}} {
     {{#traits}}
     import {{trait}};
 
@@ -17,9 +17,5 @@ namespace {{namespace}};
     }
     {{/constructors}}
     {{#methods}}
-
-    public function {{name}}() {
-
-    }
     {{/methods}}
 }

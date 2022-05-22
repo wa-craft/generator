@@ -4,7 +4,7 @@ export default abstract class AbstractClass extends AbstractWrapper {
 	access!: string;
 	isAbstract!: boolean;
 	exnteds!: string;
-	implenments!: Array<string>;
+	implenments: Array<string> = [];
 
 	constructor(data: any) {
 		super(data);
