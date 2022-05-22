@@ -106,7 +106,7 @@ export default class Backend extends AbstractGenerator {
 	 * generate model codes
 	 */
 	async models(): Promise<void> {
-		const schemas = this.data.components.schemas;
+		const schemas = this.data.schemas;
 		let targetPath = `${this.data.config.target}/backend/app/model`;
 
 		let model;

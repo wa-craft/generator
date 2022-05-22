@@ -2,6 +2,7 @@
 import { Arguments } from 'https://deno.land/x/yargs@v17.4.1-deno/deno-types.ts';
 import { fileExists, loadJsonObjectFromFile } from '../util/mod.ts';
 import { Openapi } from '../openapi/mod.ts';
+import * as generator from '../generator/mod.ts';
 import { Config, ConfigSchema } from '../Config.ts';
 
 const genCommandModule = {
@@ -80,8 +81,38 @@ const genCommandModule = {
 			return;
 		}
 
-		let oas: Openapi = new Openapi(data, config);
-		oas.generate();
+		/**
+		 * use generator process openapi data
+		 */
+		let op: Openapi = new Openapi(data, config);
+		switch (configType) {
+			case 'backend':
+				(new generator.Backend(op)).generate();
+				break;
+			case 'frontend':
+				(new generator.Frontend(op)).generate();
+				break;
+			case 'commandline':
+				(new generator.Commandline(op)).generate();
+				break;
+			case 'operation':
+				(new generator.Operation(op)).generate();
+				break;
+			case 'schema':
+				(new generator.Schema(op)).generate();
+				break;
+			case 'document':
+				(new generator.Document(op)).generate();
+				break;
+			case 'all':
+			default:
+				(new generator.Backend(op)).generate();
+				(new generator.Frontend(op)).generate();
+				(new generator.Commandline(op)).generate();
+				(new generator.Operation(op)).generate();
+				(new generator.Schema(op)).generate();
+				(new generator.Document(op)).generate();
+		}
 	},
 };
 

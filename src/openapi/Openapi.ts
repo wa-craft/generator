@@ -1,12 +1,5 @@
 // deno-lint-ignore-file
-import {
-	copy,
-	emptyDirSync,
-	ensureFileSync,
-} from 'https://deno.land/std@0.139.0/fs/mod.ts';
-
 import { Info, Path, Server, Tag } from './path/mod.ts';
-import { dirExists, fileExists } from '../util/file.ts';
 
 /** */
 class Openapi {
@@ -66,97 +59,6 @@ class Openapi {
 	 */
 	dump(): void {
 		console.info(this);
-	}
-
-	/**
-	 * turn oas object to craft object
-	 */
-	generate(): void {
-		//create target directories
-		const source = 'plugin';
-		const target = this.config.target ?? './output';
-		emptyDirSync(target);
-		console.info(`[generate:mkdir]: ${target}`);
-		const handlerFilters: Array<string> = ['Before', 'After'];
-
-		//import plugin handlers and generate codes
-		['frontend', 'backend', 'commandline', 'operation', 'schema'].forEach(
-			async (configKey: string) => {
-				let configValue = this.config[configKey] ?? '';
-				let paths: Array<string> = [];
-
-				if (Array.isArray(configValue)) {
-					//process schema array
-					for (const item of configValue) {
-						paths.push(item.type);
-					}
-				} else {
-					paths = configValue.split(',');
-				}
-
-				paths.forEach(async (path: string) => {
-					if (path === '') return;
-
-					let pluginPath = `${source}/${configKey}/${path}`;
-					let handlerFile = `./${pluginPath}/handler/mod.ts`;
-					let resourcePath = `${pluginPath}/resource`;
-
-					/*
-					 set target path.
-					 if configKey equals 'operation' or 'schema',
-					 use the last path as the output target path.
-					*/
-					let targetPath;
-					if (configKey === 'operation' || configKey === 'schema') {
-						//seperated child path
-						const spath = path.split('/');
-						targetPath = `${target}/${configKey}/${spath[1]}`;
-					} else {
-						targetPath = `${target}/${configKey}`;
-					}
-
-					if (path !== '' && path !== undefined) {
-						//copy resource files
-						emptyDirSync(targetPath);
-						if (await dirExists(resourcePath)) {
-							copy(
-								resourcePath,
-								targetPath,
-								{ overwrite: true },
-							);
-							console.info(
-								`[generate:copy]: from {${resourcePath}} to {${targetPath}}`,
-							);
-						} else {
-							console.warn(
-								`[WARNING]: ${resourcePath} is not exists!`,
-							);
-						}
-
-						//run handlers
-						if (await fileExists(handlerFile)) {
-							import('../../' + handlerFile).then((Plugin) => {
-								//iterate all of the plugin handlers and run generate functions
-								for (const handlerId of Object.keys(Plugin)) {
-									if (
-										handlerFilters.indexOf(handlerId) >= 0
-									) {
-										let handler = new Plugin[handlerId](
-											this.data,
-										);
-										handler?.execute();
-									}
-								}
-							});
-						} else {
-							console.warn(
-								`[WARNING]: ${handlerFile} is not exists!`,
-							);
-						}
-					}
-				});
-			},
-		);
 	}
 }
 

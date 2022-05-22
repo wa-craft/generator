@@ -4,7 +4,7 @@ import ClassProperty from './ClassProperty.ts';
 
 /** */
 export default class Model extends AbstractClass {
-	properties!: Array<ClassProperty>;
+	properties: Array<ClassProperty> = [];
 	config: any = {};
 	uses: Array<string> = [];
 

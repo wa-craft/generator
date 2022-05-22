@@ -3,6 +3,8 @@ import { renderFile } from 'https://deno.land/x/mustache@v0.3.0/mod.ts';
 import { ensureFileSync } from 'https://deno.land/std@0.139.0/fs/mod.ts';
 import { normalize } from 'https://deno.land/std@0.139.0/path/mod.ts';
 abstract class AbstractGenerator {
+	protected data!: any;
+
 	/**
 	 * render a template file and write the content to the target file
 	 * @param templateFilePath template file path

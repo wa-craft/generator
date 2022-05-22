@@ -15,4 +15,8 @@ export default class ClassMethod extends AbstractWrapper {
 		this.name = data.name;
 		this.type = data.type;
 	}
+
+	process(): void {
+		throw new Error('Method not implemented.');
+	}
 }

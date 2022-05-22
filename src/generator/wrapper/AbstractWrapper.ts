@@ -1,6 +1,6 @@
 export default abstract class AbstractWrapper {
-	protected name!: string;
-	protected title!: string;
+	name!: string;
+	title!: string;
 
 	constructor(data: any) {
 		this.name = data.name ?? '';
