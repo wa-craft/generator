@@ -1,3 +1,3 @@
 export type IHandler = {
-	execute(config: any, callback: any): any;
+	execute(data: any, callback: any): any;
 };
