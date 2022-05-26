@@ -203,7 +203,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /content/material/index:
+  /content/article/index:
     get:
       summary: 查看设备信息
       operationId: contentMaterialIndex
@@ -249,7 +249,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /content/material/create:
+  /content/article/create:
     post:
       summary: 查看设备信息
       operationId: contentMaterialCreate
@@ -276,7 +276,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /content/material/read:
+  /content/article/read:
     get:
       summary: 查看设备信息
       operationId: contentMaterialRead
@@ -303,7 +303,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /content/material/update:
+  /content/article/update:
     post:
       summary: 查看设备信息
       operationId: contentMaterialUpdate
@@ -330,7 +330,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /content/material/delete:
+  /content/article/delete:
     get:
       summary: 查看设备信息
       operationId: contentMaterialDelete
@@ -477,6 +477,507 @@ paths:
       responses:
         '200':
           description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: 内容审批
+      operationId: contentAudit
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取内容材料列表成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Content'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/album/index:
+    get:
+      summary: 查看相册列表
+      operationId: contentAlbumIndex
+      tags:
+        - content
+      #parameters:
+      responses:
+        '200':
+          description: 获取相册列表
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Album'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/album/create:
+    post:
+      summary: 创建相册
+      operationId: contentAlbumCreate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 内容id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/album/read:
+    get:
+      summary: 查看相册信息
+      operationId: contentAlbumRead
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/album/update:
+    post:
+      summary: 更新相册信息
+      operationId: contentAlbumUpdate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/album/delete:
+    get:
+      summary: 删除相册
+      operationId: contentAlbumDelete
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: 内容审批
+      operationId: contentAudit
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取内容材料列表成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Content'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/photo/index:
+    get:
+      summary: 查看图片列表
+      operationId: contentPhotoIndex
+      tags:
+        - content
+      #parameters:
+      responses:
+        '200':
+          description: 获取图片列表
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Photo'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/photo/create:
+    post:
+      summary: 新增图片
+      operationId: contentPhotoCreate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 内容id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 新增成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/photo/read:
+    get:
+      summary: 查看图片信息
+      operationId: contentPhotoRead
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/photo/update:
+    post:
+      summary: 更新图片信息
+      operationId: contentPhotoUpdate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/photo/delete:
+    get:
+      summary: 删除图片
+      operationId: contentPhotoDelete
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: 内容审批
+      operationId: contentAudit
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取内容材料列表成功
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Content'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/attachment/index:
+    get:
+      summary: 查看附件清单
+      operationId: contentAttachmentIndex
+      tags:
+        - content
+      #parameters:
+      responses:
+        '200':
+          description: 获取内容分类列表
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attachment'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/attachment/create:
+    post:
+      summary: 创建附件
+      operationId: contentAttachmentCreate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 内容id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 创建成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/attachment/read:
+    get:
+      summary: 查看附件信息
+      operationId: contentAttachmentRead
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 获取成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/attachment/update:
+    post:
+      summary: 更新附件信息
+      operationId: contentAttachmentUpdate
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 更新成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/attachment/delete:
+    get:
+      summary: 删除附件信息
+      operationId: contentAttachmentDelete
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 删除成功
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /content/attachment/upload:
+    get:
+      summary: 上传附件文件
+      operationId: contentAttachmentUpload
+      tags:
+        - content
+      parameters:
+        - name: id
+          in: 'query'
+          description: 型号id
+          required: true
+          schema:
+            type: integer
+            format: int(11)
+      responses:
+        '200':
+          description: 上传成功
           content: 
             application/json:
               schema:
