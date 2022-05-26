@@ -50,7 +50,7 @@ tags:
   - name: "account"
     description: "账户管理相关接口"
   - name: "user"
-  description: "用户相关接口"
+    description: "用户相关接口"
 paths:
   /auth/login:
     post:
