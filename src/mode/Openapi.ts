@@ -1,13 +1,13 @@
 // deno-lint-ignore-file
-import { Info, Path, Server, Tag } from './path/mod.ts';
+import * as openapi from './openapi/mod.ts';
 
 /** */
-class Openapi {
+export default class Openapi {
 	openapi: string = '';
-	info!: Info;
-	servers: Server[] = [];
-	tags: Tag[] = [];
-	paths: Path[] = [];
+	info!: openapi.Info;
+	servers: openapi.Server[] = [];
+	tags: openapi.Tag[] = [];
+	paths: openapi.Path[] = [];
 	schemas: any = [];
 	config: any = {};
 	data: any = {};
@@ -32,12 +32,12 @@ class Openapi {
 		this.info = data?.info;
 
 		//servers
-		data?.servers.forEach((server: Server) => {
+		data?.servers.forEach((server: openapi.Server) => {
 			this.servers.push(server);
 		});
 
 		//tags
-		data?.tags.forEach((tag: Tag) => {
+		data?.tags.forEach((tag: openapi.Tag) => {
 			this.tags.push(tag);
 		});
 
@@ -61,5 +61,3 @@ class Openapi {
 		console.info(this);
 	}
 }
-
-export { Openapi };

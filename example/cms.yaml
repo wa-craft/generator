@@ -10,6 +10,11 @@ copyright: "&copy;2022"
 revision: "1"
 #生成的模式
 type: "backend"
+#数据模板的模式，包括:
+#  openapi - 基于 OpenAPI Specification 的 API 驱动方式
+#  model - 参照 OpenAPI 的 Schema 部分的模型驱动方式
+#  database - 利用数据库驱动，从表结构逆向生成的方式
+mode: "openapi"
 #项目的命名空间，小写
 namespace: "app"
 #生成文件的输出目录
