@@ -2,11 +2,11 @@
 import Property from '../schema/Property.ts';
 /** */
 export default class ModelProperty extends Property {
-	errorMessage: string = '';
 	regexp: string = '';
+	errorMessage: string = '';
 	constructor(data: any) {
         super(data);
-		this.errorMessage = data.errorMessage;
+		this.errorMessage = data.tableName;
 		this.regexp = data.regexp;
 	}
 }

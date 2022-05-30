@@ -1,7 +1,6 @@
 // deno-lint-ignore-file
 /** */
 export default class Property {
-	access: string = 'private';
 	name: string = '';
 	type: string = 'string';
 	format = 'vachart(50)';
@@ -11,7 +10,6 @@ export default class Property {
 	enum: Array<string> = [];
 
 	constructor(data: any) {
-		this.access = data.access;
 		this.name = data.name;
 		this.type = data.type;
 		this.format = data.format;
