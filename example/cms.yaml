@@ -14,7 +14,7 @@ type: "backend"
 #  openapi - 基于 OpenAPI Specification 的 API 驱动方式
 #  model - 参照 OpenAPI 的 Schema 部分的模型驱动方式
 #  database - 利用数据库驱动，从表结构逆向生成的方式
-mode: "openapi"
+mode: "model"
 #项目的命名空间，小写
 namespace: "app"
 #生成文件的输出目录
@@ -28,7 +28,7 @@ commandline: ""
 #运维环境软件配置插件的目录，相对于 .plugin 目录
 operation: "database/mariadb,http/nginx"
 #数据文件的路径，用逗号','分隔开多个文件
-data: "./example/cms-admin.yaml"
+data: "./example/cms-model.yaml"
 #数据库存储软件配置插件的目录，相对于 .plugin 目录
 schema:
   - name: 'cms-mariadb'
