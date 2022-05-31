@@ -8,85 +8,85 @@ schemas:
       - content
     properties:
       title:
-        description: the title of an article
+        description: 文章标题
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '这是一个文章标题'
       subTitle:
-        description: the sub title of an article
+        description: 文章副标题
         type: 'string'
         format: 'varchar(150)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Some description of a title'
+        example: '副标题'
       author:
-        description: the author of an article
+        description: 作者
         type: 'string'
         format: 'varchar(150)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Some description of a title'
+        example: '张三'
       content:
-        description: the content of an article
+        description: 正文
         type: 'string'
         format: 'text'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Some description of a title'
+        example: '这是一篇正经的文章'
       user:
         reference: #schemas/user
         referenceMode: 'manyToOne'
       createTime:
-        description: the create time of an article
+        description: 创建时间
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: ''
         example: '1635003241'
       updateTime:
-        description: the update time of an article
+        description: 更新时间
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: '16351154679'
+        example: '1635115467'
       status:
-        description: the status of an article
-        type: 'int'
+        description: 状态
+        type: 'integer'
         format: 'tinyint(1)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: 1
         example: '1'
       isTop:
-        description: 'if the article is on the top of all'
-        type: 'int'
+        description: 是否置顶
+        type: 'integer'
         format: 'tinyint(1)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: 1
         example: '1'
       isIndex:
-        description: if the article is in the first index page
-        type: 'int'
+        description: 是否在首页显示
+        type: 'integer'
         format: 'tinyint(1)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: 1
         example: '1'
       viewCount:
         description: the count of clicks of the viewers
-        type: 'int'
+        type: 'integer'
         format: 'int(11)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: 0
         example: '0'
@@ -103,42 +103,42 @@ schemas:
         description: 附件标题
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '一个附件文档'
       mimeType:
         description: 附件mime类型
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'application/msword'
       size:
         description: 附件大小（字节）
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/d'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '1024000'
       path:
         description: 附件保存地址（相对于public目录），包含完整的文件名
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'upload/file/123.docx'
       hash:
         description: 生成的校验哈希值
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'edbs12bv9zf'
       user:
         description: 操作者
         reference: #schema/user
@@ -147,15 +147,15 @@ schemas:
         description: 被下载或者打开的次数
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 0
+        example: 101
       createTime:
         description: 创建时间
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: ''
         example: '1635003241'
@@ -163,7 +163,7 @@ schemas:
         description: 更新时间
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: ''
         example: '1635003241'
@@ -171,10 +171,10 @@ schemas:
         description: 修订版本
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: '1635003241'
+        default: 0
+        example: 1
   menu:
     description: 前台菜单
     primaryKey: 'id'
@@ -182,154 +182,156 @@ schemas:
     required:
     properties:
       parent:
+        description: 父节点
         reference: #schema/menu
         referenceMode: 'ManyToOne'
       name:
         description: 菜单项名称，英文
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'home'
       caption:
         description: 菜单项说明
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '首页'
       attribute:
         description: 菜单属性
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 1
+        example: 1
       type:
         description: 菜单类型
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 2
+        example: 2
       sequence:
         description: 菜单排序数字
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 0
+        example: 0
       status:
         description: 菜单状态
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 1
+        example: 1
       isNavigate:
         description: 是否出现于顶部导航
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 0
+        example: 1
       isLeft:
         description: 是否出现于左侧导航
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/w'
         errorMessage: ''
         default: ''
         example: 'Breaking news!'
       isIndex:
         description: 是否出现于上级菜单
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 0
+        example: 1
       isRight:
         description: 是否出现于右侧导航
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 0
+        example: 0
       isFoot:
         description: 是否出现于底部导航
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 0
+        example: 1
       indexCapacity:
         description: 首页显示条目数
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'integer'
+        format: 'smallint(6)'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 5
+        example: 10
       titleCapacity:
         description: 标题显示字数
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'integer'
+        format: 'smallint(6)'
+        rule: '/w'
         errorMessage: ''
         default: ''
         example: 'Breaking news!'
       url:
         description: 当菜单为外链时使用的地址
         type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        format: 'varchar(250)'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'http://www.bitseed.cn'
       memo:
         description: 菜单介绍内容
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '这是一个菜单'
       user:
         reference: #schema/user
         referenceMode: 'ManyToOne'
       createTime:
-        description: the create time of an article
+        description: 创建时间
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: ''
         example: '1635003241'
       updateTime:
-        description: the update time of an article
+        description: 更新时间
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: '16351154679'
+        example: '1635115467'
       template:
         description: 菜单使用的模板路径
         type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        format: 'varchar(250)'
+        rule: '/w'
         errorMessage: ''
         default: ''
+        example: '/error/404'
   link:
     description: 外链
     primaryKey: 'id'
@@ -340,60 +342,65 @@ schemas:
         description: 链接名称
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
-        default: ''
+        default: '东莞培基'
       url:
         description: 连接地址
         type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        format: 'varchar(250)'
+        rule: '/w'
         errorMessage: ''
         default: ''
+        example: 'http://www.bitseed.cn'
       image:
         description: 链接图片
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
+        example: '/images/123.jpg'
       target:
         description: 链接跳转方式
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
+        example: '_blank'
       desription:
         description: 链接描述
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
+        example: '这是个链接'
       status:
         description: 状态
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/w'
         errorMessage: ''
-        default: ''
+        default: 1
+        example: 0
       createTime:
-        description: the create time of an article
+        description: 创建时间
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: ''
         example: '1635003241'
       updateTime:
-        description: the update time of an article
+        description: 更新时间
         type: 'timestamp'
         format: 'int(11)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: '16351154679'
+        example: '1635115467'
   group:
     description: 用户分组
     primaryKey: 'id'
@@ -402,20 +409,20 @@ schemas:
     properties:
       name:
         description: 分组名称
-        type: 'timestamp'
-        format: 'int(11)'
-        regexp: '/d'
+        type: 'string'
+        format: 'varchar(50)'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: '1635003241'
+        example: '一个分组'
       caption:
         description: 分组说明
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '这是一个分组'
   role:
     description: 角色
     primaryKey: 'id'
@@ -426,37 +433,38 @@ schemas:
         description: 角色名称
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '管理员'
       parent:
+        description: 父角色
         reference: #schema/role
         referenceMode: 'ManyToOne'
       status:
         description: 状态
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 1
+        example: 0
       createTime:
-        description: 数据创建时间
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        description: 创建时间
+        type: 'timestamp'
+        format: 'int(11)'
+        rule: '/d'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '1635003241'
       updateTime:
-        description: 数据修改时间
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        description: 更新时间
+        type: 'timestamp'
+        format: 'int(11)'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '1635115467'
   user:
     description: 用户
     primaryKey: 'id'
@@ -464,120 +472,113 @@ schemas:
     required:
     properties:
       account:
-        description: the title of an article
+        description: 账号
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'admin'
       nickname:
-        description: the title of an article
+        description: 昵称
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '大佬'
       password:
-        description: the title of an article
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        description: 密码
+        type: 'password'
+        format: 'char(160)'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'BitsEEd#202$2'
       avatar:
-        description: the title of an article
+        description: 头像
         type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        format: 'varchar(250)'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'http://www.bitseed/avatar/1.jpg'
       lastLoginTime:
-        description: the title of an article
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        description: 上次登录时间
+        type: 'integer'
+        format: 'int(11)'
+        rule: '/w'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 0
+        example: 1653979846
       lastLoginIp:
-        description: the title of an article
+        description: 上次登录IP
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '127.0.0.1'
       loginCount:
-        description: the title of an article
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        description: 登录次数
+        type: 'integer'
+        format: 'int(11)'
+        rule: '/w'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 0
+        example: 123
       verify:
-        description: the title of an article
+        description: 校验码
         type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        format: 'varchar(10)'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: 'Er5T'
       email:
-        description: the title of an article
+        description: 电子邮箱地址
         type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        format: 'varchar(150)'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
-      remark:
-        description: the title of an article
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        example: 'admin@localhost'
+      createTime:
+        description: 创建时间
+        type: 'timestamp'
+        format: 'int(11)'
+        rule: '/d'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
-      creatTime:
-        description: the title of an article
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        example: '1635003241'
+      updateTime:
+        description: 更新时间
+        type: 'timestamp'
+        format: 'int(11)'
+        rule: '/d'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '1635115467'
       status:
-        description: the title of an article
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
+        description: 状态
+        type: 'boolean'
+        format: 'tinyint(1)'
+        rule: '/d'
         errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
-      typeId:
-        description: the title of an article
-        type: 'string'
-        format: 'varchar(50)'
-        regexp: '/w'
-        errorMessage: ''
-        default: ''
-        example: 'Breaking news!'
+        default: 1
+        example: 0
       group:
+        description: 用户分组
         reference: #schema/group
         referenceMode: 'ManyToMany'
       info:
-        description: the title of an article
+        description: 用户描述信息
         type: 'string'
         format: 'varchar(50)'
-        regexp: '/w'
+        rule: '/w'
         errorMessage: ''
         default: ''
-        example: 'Breaking news!'
+        example: '好人一个'
   access:
     description: 权限
     primaryKey: 'id'
@@ -594,9 +595,9 @@ schemas:
         referenceMode: 'ManyToMany'
       access:
         description: 权限类型
-        type: 'int'
+        type: 'integer'
         format: 'tinyint(1)'
-        regexp: '/d'
+        rule: '/d'
         errorMessage: ''
         default: 0
         example: '0 - 无权限 | 1 - 可读取不可写 | 2 - 可写入不可读取 | 3 - 可读写'
