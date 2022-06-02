@@ -1,4 +1,4 @@
 // deno-lint-ignore-file
-export type IMode = {
+export type IParser = {
 	load(data: any): void;
 };

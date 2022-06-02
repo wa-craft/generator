@@ -1,9 +1,9 @@
 // deno-lint-ignore-file
 import * as openapi from './openapi/mod.ts';
-import { IMode } from './IMode.ts';
+import { IParser } from './IParser.ts';
 
 /** */
-export default class Openapi implements IMode {
+export default class Openapi implements IParser {
 	openapi: string = '';
 	info!: openapi.Info;
 	servers: openapi.Server[] = [];

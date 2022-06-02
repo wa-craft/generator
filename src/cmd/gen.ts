@@ -1,7 +1,7 @@
 // deno-lint-ignore-file
 import { Arguments } from 'https://deno.land/x/yargs@v17.4.1-deno/deno-types.ts';
 import { fileExists, loadJsonObjectFromFile } from '../util/mod.ts';
-import { Openapi } from '../openapi/mod.ts';
+import { Openapi } from '../parser/mod.ts';
 import * as generator from '../generator/mod.ts';
 import { Config, ConfigSchema } from '../Config.ts';
 
